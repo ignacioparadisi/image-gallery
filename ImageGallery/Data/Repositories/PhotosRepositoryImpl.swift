@@ -10,6 +10,10 @@ import Foundation
 struct PhotosRepositoryImpl: PhotosRepository {
     let client: APIClient
     
+    init(client: APIClient) {
+        self.client = client
+    }
+    
     func fetchPhotos(page: Int) async throws -> [PhotoDTO] {
         let endpoint = PhotosEndpoint(page: page)
         return try await client.request(endpoint: endpoint)

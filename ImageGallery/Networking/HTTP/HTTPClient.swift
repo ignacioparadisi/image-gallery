@@ -13,7 +13,7 @@ struct HTTPClient: APIClient {
     private let session: HTTPSession
     private let accessKey: String
     
-    init(session: HTTPSession, accessKey: String) {
+    init(session: HTTPSession = URLSession.shared, accessKey: String) {
         self.session = session
         self.accessKey = accessKey
     }
