@@ -9,7 +9,7 @@ import Foundation
 
 /// Endpoint for fetching photos
 struct PhotosEndpoint: Endpoint {
-    typealias Response = String
+    typealias Response = [PhotoDTO]
     
     let page: Int
     

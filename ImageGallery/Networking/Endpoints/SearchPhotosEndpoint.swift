@@ -9,7 +9,7 @@ import Foundation
 
 /// Endpoint for searching photos
 struct SearchPhotosEndpoint: Endpoint {
-    typealias Response = String
+    typealias Response = PageDTO<PhotoDTO>
     
     /// Text for querying photos
     let text: String

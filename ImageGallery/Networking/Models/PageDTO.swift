@@ -1,5 +1,5 @@
 //
-//  Page.swift
+//  PageDTO.swift
 //  ImageGallery
 //
 //  Created by Ignacio Paradisi on 10/5/26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Page<D: Decodable>: Decodable {
+nonisolated struct PageDTO<D: Decodable>: Decodable {
     let total: Int
     let totalPages: Int
     let results: [D]
