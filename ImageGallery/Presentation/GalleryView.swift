@@ -37,26 +37,13 @@ struct GalleryView: View {
                 LazyVGrid(columns: [column], spacing: 2) {
                     ForEach(viewModel.photos) { photo in
                         if let url = photo.urls.thumb {
-                            Cell(url: URL(string: url))
+                            GalleryViewCell(url: URL(string: url))
                                 .onAppear { viewModel.loadNextPageIfNeeded(currentPhoto: photo)
                                 }
                         }
                     }
                 }
             }
-        }
-    }
-    
-    struct Cell: View {
-        let url: URL?
-        var body: some View {
-            Color.gray
-                .aspectRatio(1, contentMode: .fit)
-                .overlay {
-                    RemoteImage(url: url)
-                }
-                .clipped()
-                .contentShape(.rect)
         }
     }
 }
