@@ -9,12 +9,7 @@ import Foundation
 
 // TODO: Move networking to a package so I don't have to use nonisolated everywhere
 
-protocol APIClient {
-    func request<E: Endpoint>(endpoint: E) async throws -> E.Response
-    func data(from endpoint: any Endpoint) async throws -> Data
-}
-
-nonisolated struct HTTPClient: APIClient {
+struct HTTPClient: APIClient {
     private let session: HTTPSession
     private let accessKey: String
     
