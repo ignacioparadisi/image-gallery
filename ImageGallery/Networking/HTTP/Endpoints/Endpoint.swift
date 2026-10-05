@@ -7,24 +7,24 @@
 
 import Foundation
 
-public enum HTTPMethod: String {
-    case get = "GET"
-}
-
-public enum HTTPScheme: String {
-    case https = "https"
-}
-
-public protocol Endpoint {
+nonisolated protocol Endpoint: Sendable {
+    associatedtype Response: Decodable & Sendable
+    
+    /// HTTP Method for the enpoint. `GET`,  `POST`, `PUT`, `DELETE`
     var method: HTTPMethod { get }
+    /// Scheme for the request. `HTTPS`,  `HTTP`
     var scheme: HTTPScheme { get }
+    /// API's host
     var host: String { get }
+    /// Path for the endpoint
     var path: String { get }
+    /// Parameters sent in the request
     var parameters: [URLQueryItem] { get }
+    /// Body sent in the request
     var body: Encodable? { get }
 }
 
-public extension Endpoint {
+extension Endpoint {
     var method: HTTPMethod { .get }
     var scheme: HTTPScheme { .https }
     var host: String { "api.unsplash.com" }
@@ -32,13 +32,14 @@ public extension Endpoint {
     var body: Encodable? { nil }
 }
 
-public extension Endpoint {
+nonisolated extension Endpoint {
+    /// URL created from the endpoint
     var url: URL? {
         var components = URLComponents()
         components.scheme = scheme.rawValue
         components.host = host
         components.path = path
-        components.queryItems = parameters
+        components.queryItems = parameters.isEmpty ? nil : parameters
         return components.url
     }
 }

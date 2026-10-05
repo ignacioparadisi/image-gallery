@@ -7,15 +7,20 @@
 
 import Foundation
 
-public struct SearchPhotosEndpoint: Endpoint {
-    public let text: String
-    public let page: Int
+/// Endpoint for searching photos
+struct SearchPhotosEndpoint: Endpoint {
+    typealias Response = String
     
-    public var path: String {
+    /// Text for querying photos
+    let text: String
+    /// Page to be fetched
+    let page: Int
+    
+    var path: String {
         return "/search/photos"
     }
     
-    public var parameters: [URLQueryItem] {
+    var parameters: [URLQueryItem] {
         return [
             URLQueryItem(name: "query", value: text),
             URLQueryItem(name: "page", value: String(describing: page))
