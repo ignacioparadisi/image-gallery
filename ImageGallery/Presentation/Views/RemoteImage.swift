@@ -8,23 +8,27 @@
 import SwiftUI
 
 struct RemoteImage: View {
+    @Environment(\.imageLoader) private var imageLoader
     let url: URL?
+    @State private var image: CGImage?
     
     var body: some View {
-        AsyncImage(url: url) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-            case .empty:
-                Color.gray
-            case .failure:
-                Color.gray
-            @unknown default:
-                Color.gray
+        Color.gray.opacity(0.4)
+            .overlay {
+                if let image = image ?? imageLoader.cachedImage(url: url) {
+                    Image(decorative: image, scale: 1)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .transition(.opacity)
+                }
             }
-        }
+            .task {
+                // TODO: Handle error
+                let loadedImage = try? await imageLoader.image(url: url)
+                withAnimation(.smooth(duration: 0.1)) {
+                    image = loadedImage
+                }
+            }
     }
 }
 

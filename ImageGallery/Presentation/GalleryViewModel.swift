@@ -31,7 +31,7 @@ final class GalleryViewModel: ObservableObject {
     private let repository: PhotosRepository
     private let prefetchThreshold: Int = 10
     private var seenIDs: Set<String> = []
-    private var nextPage: Int = 0
+    private var nextPage: Int = 1
     
     
     init(repository: PhotosRepository) {
