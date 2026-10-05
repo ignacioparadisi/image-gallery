@@ -9,11 +9,9 @@ import Foundation
 
 // TODO: Move networking to a package so I don't have to use nonisolated everywhere
 
-enum RequestError: Error {
-    case invalidURL
-}
-
 protocol APIClient {
+    func request<E: Endpoint>(endpoint: E) async throws -> E.Response
+    func data(from endpoint: any Endpoint) async throws -> Data
 }
 
 nonisolated struct HTTPClient: APIClient {
@@ -33,15 +31,32 @@ nonisolated struct HTTPClient: APIClient {
     
     func data(from endpoint: any Endpoint) async throws -> Data {
         let request = try createRequest(endpoint: endpoint)
-        let (data, _) = try await session.data(request)
+        let (data, response) = try await session.data(request)
+        try validate(response: response)
         return data
     }
     
     private func createRequest(endpoint: any Endpoint) throws -> URLRequest {
-        guard let url = endpoint.url else { throw RequestError.invalidURL }
+        guard let url = endpoint.url else { throw NetworkError.invalidURL }
         var request = URLRequest(url: url)
         request.httpMethod = endpoint.method.rawValue
         request.allHTTPHeaderFields = ["Authorization": "Client-ID \(accessKey)"]
         return request
+    }
+    
+    private func validate(response: URLResponse) throws {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        switch httpResponse.statusCode {
+        case 200..<300:
+            return
+        case 401:
+            throw NetworkError.unauthozied
+        case 403 where httpResponse.value(forHTTPHeaderField: "X-Ratelimit-Remaining") == "0":
+            throw NetworkError.rateLimited
+        default:
+            throw NetworkError.httpError(statusCode: httpResponse.statusCode)
+        }
     }
 }

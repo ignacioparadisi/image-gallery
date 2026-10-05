@@ -24,6 +24,25 @@ struct HTTPClientTests {
         let response = try await client.request(endpoint: PhotosEndpoint(page: 1))
         #expect(response == "data")
     }
+    
+    @Test("Non 200..<300 status codes map to NetworkError", arguments: [
+        (401, [String: String](), NetworkError.unauthozied),
+        (403, ["X-Ratelimit-Remaining": "0"], .rateLimited),
+        (403, [:], .httpError(statusCode: 403)),
+        (404, [:], .httpError(statusCode: 404)),
+        (500, [:], .httpError(statusCode: 500))
+    ])
+    func statusCodeMapping(statusCode: Int, headers: [String: String], expectedError: NetworkError) async {
+        let session = MockSession { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: statusCode, httpVersion: nil, headerFields: headers)!
+            return (Data(), response)
+        }
+        let client = HTTPClient(session: session, accessKey: "test")
+        await #expect(throws: expectedError) {
+            let _ = try await client.request(endpoint: PhotosEndpoint(page: 1))
+        }
+    }
+    
 }
 
 struct MockSession: HTTPSession {
