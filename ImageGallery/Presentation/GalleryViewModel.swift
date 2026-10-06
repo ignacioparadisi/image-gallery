@@ -9,12 +9,12 @@ import Foundation
 import Combine
 
 struct PagedPhotos {
-    private(set) var photos: [PhotoDTO] = []
+    private(set) var photos: [Photo] = []
     private(set) var nextPage = 1
     private(set) var isFinished: Bool = false
     private var seenIDs: Set<String> = []
     
-    mutating func append(_ page: [PhotoDTO], isLastPage: Bool) {
+    mutating func append(_ page: [Photo], isLastPage: Bool) {
         photos += page.filter { seenIDs.insert($0.id).inserted }
         nextPage += 1
         isFinished = isLastPage
@@ -59,7 +59,7 @@ final class GalleryViewModel: ObservableObject {
     var isSearching: Bool {
         searchTextSubject.value.isEmpty == false
     }
-    var photos: [PhotoDTO] {
+    var photos: [Photo] {
         isSearching ? searchResults.photos : feed.photos
     }
     
@@ -80,7 +80,7 @@ final class GalleryViewModel: ObservableObject {
         startLoading()
     }
     
-    func loadNextPageIfNeeded(currentPhoto photo: PhotoDTO) {
+    func loadNextPageIfNeeded(currentPhoto photo: Photo) {
         guard case .idle = paginationState, photos.suffix(prefetchThreshold).contains(where: { $0.id == photo.id }) else {
             return
         }

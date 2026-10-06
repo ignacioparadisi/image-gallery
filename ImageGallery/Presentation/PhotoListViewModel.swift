@@ -8,6 +8,6 @@
 import Foundation
 import Combine
 
-//final class PhotoListViewModel: ObservableObject {
-//    @Published private(set) photos: [PhotoDTO] = []
-//}
+final class PhotoListViewModel: ObservableObject {
+    @Published private(set) var photos: [PhotoDTO] = []
+}

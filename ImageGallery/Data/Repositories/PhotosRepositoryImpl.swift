@@ -14,13 +14,19 @@ struct PhotosRepositoryImpl: PhotosRepository {
         self.client = client
     }
     
-    func fetchPhotos(page: Int) async throws -> [PhotoDTO] {
+    func fetchPhotos(page: Int) async throws -> [Photo] {
         let endpoint = PhotosEndpoint(page: page)
-        return try await client.request(endpoint: endpoint)
+        let photos = try await client.request(endpoint: endpoint)
+        return photos.map { Photo(from: $0) }
     }
     
-    func searchPhotos(text: String, page: Int) async throws -> PageDTO<PhotoDTO> {
+    func searchPhotos(text: String, page: Int) async throws -> Page<Photo> {
         let endpoint = SearchPhotosEndpoint(text: text, page: page)
-        return try await client.request(endpoint: endpoint)
+        let photosPage = try await client.request(endpoint: endpoint)
+        return Page(
+            total: photosPage.total,
+            totalPages: photosPage.totalPages,
+            results: photosPage.results.map { Photo(from: $0) }
+        )
     }
 }
