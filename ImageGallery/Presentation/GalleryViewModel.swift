@@ -8,6 +8,19 @@
 import Foundation
 import Combine
 
+struct PagedPhotos {
+    private(set) var photos: [PhotoDTO] = []
+    private(set) var nextPage = 1
+    private(set) var isFinished: Bool = false
+    private var seenIDs: Set<String> = []
+    
+    mutating func append(_ page: [PhotoDTO], isLastPage: Bool) {
+        photos += page.filter { seenIDs.insert($0.id).inserted }
+        nextPage += 1
+        isFinished = isLastPage
+    }
+}
+
 // @Observable is only available from iOS 17
 final class GalleryViewModel: ObservableObject {
     enum ViewState {
@@ -26,16 +39,40 @@ final class GalleryViewModel: ObservableObject {
     
     @Published private(set) var state: ViewState = .loading
     @Published private(set) var paginationState: PaginationState = .idle
-    @Published private(set) var photos: [PhotoDTO] = []
+    @Published private(set) var feed = PagedPhotos()
+    @Published private(set) var searchResults = PagedPhotos()
+    @Published var searchText: String = "" {
+        didSet {
+            searchTextSubject.send(searchText)
+        }
+    }
+    
+    private var searchTask: Task<Void, Never>?
+    private var searchTextSubject = CurrentValueSubject<String, Never>("")
+    private var cancellables = Set<AnyCancellable>()
     
     private let repository: PhotosRepository
     private let prefetchThreshold: Int = 10
     private var seenIDs: Set<String> = []
     private var nextPage: Int = 1
     
+    var isSearching: Bool {
+        searchTextSubject.value.isEmpty == false
+    }
+    var photos: [PhotoDTO] {
+        isSearching ? searchResults.photos : feed.photos
+    }
     
     init(repository: PhotosRepository) {
         self.repository = repository
+        
+        searchTextSubject
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] query in
+                self?.search(query)
+            }
+            .store(in: &cancellables)
     }
     
     func loadFirstPageIfNeeded() {
@@ -57,14 +94,31 @@ final class GalleryViewModel: ObservableObject {
     
     private func loadNextPage() async {
         do {
-            let page = try await repository.fetchPhotos(page: nextPage)
-            let newPhotos = page.filter {  seenIDs.insert($0.id).inserted }
-            photos.append(contentsOf: newPhotos)
-            nextPage += 1
+            let page = try await repository.fetchPhotos(page: feed.nextPage)
+            feed.append(page, isLastPage: false)
             paginationState = .idle
-            state = photos.isEmpty ? .empty : .loaded
+            state = feed.photos.isEmpty ? .empty : .loaded
+        } catch NetworkError.rateLimited {
+            // TODO: Show alert when limit reached
         } catch {
             state = .failure(error)
+        }
+    }
+    
+    private func search(_ text: String) {
+        searchTask?.cancel()
+        searchResults = PagedPhotos()
+        guard text.isEmpty == false else { return }
+        searchTask = Task { await loadNextSearchPage(with: text) }
+    }
+    
+    private func loadNextSearchPage(with text: String) async  {
+        do {
+            let page = try await repository.searchPhotos(text: text, page: searchResults.nextPage)
+            guard text == searchText else { return }
+            searchResults.append(page.results, isLastPage: searchResults.nextPage >= page.totalPages)
+        } catch {
+            if Task.isCancelled { return }
         }
     }
 }

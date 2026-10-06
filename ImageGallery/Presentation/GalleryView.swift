@@ -38,12 +38,14 @@ struct GalleryView: View {
                     ForEach(viewModel.photos) { photo in
                         if let url = photo.urls.thumb {
                             GalleryViewCell(url: URL(string: url))
-                                .onAppear { viewModel.loadNextPageIfNeeded(currentPhoto: photo)
+                                .onAppear {
+                                    viewModel.loadNextPageIfNeeded(currentPhoto: photo)
                                 }
                         }
                     }
                 }
             }
+            .searchable(text: $viewModel.searchText)
         }
     }
 }
