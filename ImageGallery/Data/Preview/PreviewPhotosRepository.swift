@@ -9,8 +9,12 @@ import Foundation
 
 #if DEBUG
 struct PreviewPhotosRepository: PhotosRepository {
-    func fetchPhotos(page: Int) async throws -> [Photo] {
-        return PhotoDTO.previews.map { Photo(from: $0) }
+    func fetchPhotos(page: Int) async throws -> Page<Photo> {
+        return Page(
+            total: 0,
+            totalPages: 0,
+            results: PhotoDTO.previews.map { Photo(from: $0) }
+        )
     }
     
     func searchPhotos(text: String, page: Int) async throws -> Page<Photo> {

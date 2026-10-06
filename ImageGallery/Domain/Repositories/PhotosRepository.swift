@@ -8,6 +8,6 @@
 import Foundation
 
 protocol PhotosRepository {
-    func fetchPhotos(page: Int) async throws -> [Photo]
+    func fetchPhotos(page: Int) async throws -> Page<Photo>
     func searchPhotos(text: String, page: Int) async throws -> Page<Photo>
 }

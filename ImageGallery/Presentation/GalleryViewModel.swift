@@ -8,117 +8,59 @@
 import Foundation
 import Combine
 
-struct PagedPhotos {
-    private(set) var photos: [Photo] = []
-    private(set) var nextPage = 1
-    private(set) var isFinished: Bool = false
-    private var seenIDs: Set<String> = []
-    
-    mutating func append(_ page: [Photo], isLastPage: Bool) {
-        photos += page.filter { seenIDs.insert($0.id).inserted }
-        nextPage += 1
-        isFinished = isLastPage
-    }
-}
-
 // @Observable is only available from iOS 17
-final class GalleryViewModel: ObservableObject {
-    enum ViewState {
-        case loading
-        case loaded
-        case empty
-        case failure(Error)
-    }
-    
-    enum PaginationState {
-        case idle
-        case loading
-        case loaded
-        case failure(Error)
-    }
-    
-    @Published private(set) var state: ViewState = .loading
-    @Published private(set) var paginationState: PaginationState = .idle
-    @Published private(set) var feed = PagedPhotos()
-    @Published private(set) var searchResults = PagedPhotos()
-    @Published var searchText: String = "" {
-        didSet {
-            searchTextSubject.send(searchText)
+class GalleryViewModel: ObservableObject {
+    enum Content: Equatable {
+        case feed
+        case searchResults(PhotoGridViewModel)
+        
+        static func ==(lhs: Content, rhs: Content) -> Bool {
+            switch (lhs, rhs) {
+            case (.feed, .feed):
+                return true
+            case (searchResults(let lhsViewModel), .searchResults(let rhsViewModel)):
+                return lhsViewModel === rhsViewModel
+            default:
+                return false
+            }
         }
     }
     
-    private var searchTask: Task<Void, Never>?
-    private var searchTextSubject = CurrentValueSubject<String, Never>("")
-    private var cancellables = Set<AnyCancellable>()
+    @Published var query = ""
+//    @Published private(set) var content: Content = .feed
     
     private let repository: PhotosRepository
-    private let prefetchThreshold: Int = 10
-    private var seenIDs: Set<String> = []
-    private var nextPage: Int = 1
+    let feedViewModel: PhotoGridViewModel
+    @Published private(set) var searchViewModel: PhotoGridViewModel?
+    private var activeQuery: String = ""
     
-    var isSearching: Bool {
-        searchTextSubject.value.isEmpty == false
-    }
-    var photos: [Photo] {
-        isSearching ? searchResults.photos : feed.photos
-    }
+    private var cancellables: Set<AnyCancellable> = []
     
     init(repository: PhotosRepository) {
         self.repository = repository
+        self.feedViewModel = PhotoGridViewModel(dataSource: FeedGridDataSource(repository: self.repository))
         
-        searchTextSubject
+        self.$query
+            .dropFirst()
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
-            .removeDuplicates()
             .sink { [weak self] query in
-                self?.search(query)
+                self?.search(query: query)
             }
             .store(in: &cancellables)
     }
     
-    func loadFirstPageIfNeeded() {
-        guard photos.isEmpty, case .idle = paginationState else { return }
-        startLoading()
-    }
-    
-    func loadNextPageIfNeeded(currentPhoto photo: Photo) {
-        guard case .idle = paginationState, photos.suffix(prefetchThreshold).contains(where: { $0.id == photo.id }) else {
+    private func search(query: String) {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedQuery.isEmpty == false else {
+            searchViewModel = nil
             return
         }
-        startLoading()
+        
+        searchViewModel = PhotoGridViewModel(dataSource: SearchGridDataSource(repository: repository, query: trimmedQuery))
+        searchViewModel?.loadFirstPageIfNeeded()
     }
     
-    private func startLoading() {
-        paginationState = .loading
-        Task { await loadNextPage() }
+    func fetchFeed() {
+        feedViewModel.loadFirstPageIfNeeded()
     }
-    
-    private func loadNextPage() async {
-        do {
-            let page = try await repository.fetchPhotos(page: feed.nextPage)
-            feed.append(page, isLastPage: false)
-            paginationState = .idle
-            state = feed.photos.isEmpty ? .empty : .loaded
-        } catch NetworkError.rateLimited {
-            // TODO: Show alert when limit reached
-        } catch {
-            state = .failure(error)
-        }
-    }
-    
-    private func search(_ text: String) {
-        searchTask?.cancel()
-        searchResults = PagedPhotos()
-        guard text.isEmpty == false else { return }
-        searchTask = Task { await loadNextSearchPage(with: text) }
-    }
-    
-    private func loadNextSearchPage(with text: String) async  {
-        do {
-            let page = try await repository.searchPhotos(text: text, page: searchResults.nextPage)
-            guard text == searchText else { return }
-            searchResults.append(page.results, isLastPage: searchResults.nextPage >= page.totalPages)
-        } catch {
-            if Task.isCancelled { return }
-        }
-    }
-}
+ }
