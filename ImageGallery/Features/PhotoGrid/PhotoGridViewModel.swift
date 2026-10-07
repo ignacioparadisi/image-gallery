@@ -76,7 +76,7 @@ class PhotoGridViewModel: ObservableObject {
             if photos.isEmpty {
                 phase = .empty
             } else {
-                phase = photos.count < page.total ? .idle : .finished
+                phase = nextPage > page.totalPages ? .finished : .idle
             }
         } catch {
             if let error = error as? NetworkError {

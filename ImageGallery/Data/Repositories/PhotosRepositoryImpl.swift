@@ -17,11 +17,19 @@ struct PhotosRepositoryImpl: PhotosRepository {
     func fetchPhotos(page: Int, pageSize: Int) async throws -> Page<Photo> {
         let endpoint = PhotosEndpoint(page: page, pageSize: pageSize)
         let response = try await client.request(endpoint: endpoint)
-        let total = Int(response.headers["x-total"] ?? "") ?? 0
+        let photos = response.body.map { Photo(from: $0) }
+        guard let total = response.header("X-Total").flatMap(Int.init) else {
+            // This is done to let the view load more photos when there is no page information
+            return Page(
+                total: photos.count,
+                totalPages: photos.count < pageSize ? page : page + 1,
+                results: photos
+            )
+        }
         return Page(
             total: total,
-            totalPages: 0,
-            results: response.body.map { Photo(from: $0) }
+            totalPages: (total + pageSize - 1) / pageSize,
+            results: photos
         )
     }
     
