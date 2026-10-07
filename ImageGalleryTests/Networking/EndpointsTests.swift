@@ -11,12 +11,12 @@ import Testing
 
 struct EndpointsTests {
     @Test("URL is built correctly", arguments: [
-        (PhotosEndpoint(page: 1) as any Endpoint, "https://api.unsplash.com/photos?page=1"),
-        (SearchPhotosEndpoint(text: "Dog", page: 1), "https://api.unsplash.com/search/photos?query=Dog&page=1"),
+        (PhotosEndpoint(page: 1, pageSize: 30) as any Endpoint, "https://api.unsplash.com/photos?page=1&per_page=30"),
+        (SearchPhotosEndpoint(text: "Dog", page: 1, pageSize: 30), "https://api.unsplash.com/search/photos?query=Dog&page=1&per_page=30"),
         (MockEndpoint(), "https://api.unsplash.com/stub")
     ])
     func urlIsBuiltCorrectly(endpoint: any Endpoint, expected: String) {
-        #expect(endpoint.url?.absoluteString == expected)
+        #expect(endpoint.url(host: "api.unsplash.com")?.absoluteString == expected)
     }
 }
 

@@ -12,17 +12,18 @@ import Testing
 struct HTTPClientTests {
     @Test
     func requestHasAuthorizationHeader() async throws {
-        let key = "test-key"
+        let authorization = "Client-ID test-key"
         let mockSession = MockSession { request in
-            #expect(request.value(forHTTPHeaderField: "Authorization") == "Client-ID \(key)")
+            #expect(request.value(forHTTPHeaderField: "Authorization") == authorization)
             #expect(request.httpMethod == "GET")
-            
+
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-            return (Data(#""data""#.utf8), response)
+            let body = #"[{"id": "photo-1", "width": 100, "height": 100, "urls": {}}]"#
+            return (Data(body.utf8), response)
         }
-        let client = HTTPClient(session: mockSession, accessKey: key)
-        let response = try await client.request(endpoint: PhotosEndpoint(page: 1))
-        #expect(response == "data")
+        let client = HTTPClient(session: mockSession, host: "api.unsplash.com", authorization: authorization)
+        let response = try await client.request(endpoint: PhotosEndpoint(page: 1, pageSize: 30))
+        #expect(response.body.map(\.id) == ["photo-1"])
     }
     
     @Test("Non 200..<300 status codes map to NetworkError", arguments: [
@@ -37,9 +38,9 @@ struct HTTPClientTests {
             let response = HTTPURLResponse(url: request.url!, statusCode: statusCode, httpVersion: nil, headerFields: headers)!
             return (Data(), response)
         }
-        let client = HTTPClient(session: session, accessKey: "test")
+        let client = HTTPClient(session: session, host: "api.unsplash.com", authorization: "test")
         await #expect(throws: expectedError) {
-            let _ = try await client.request(endpoint: PhotosEndpoint(page: 1))
+            let _ = try await client.request(endpoint: PhotosEndpoint(page: 1, pageSize: 30))
         }
     }
     
