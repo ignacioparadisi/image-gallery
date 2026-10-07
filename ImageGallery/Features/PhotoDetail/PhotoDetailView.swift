@@ -59,7 +59,7 @@ struct PhotoDetailView: View {
         BackButton(action: dismiss)
             .padding(.horizontal)
             .opacity(isExpanded && dragOffset == .zero ? 1 : 0)
-            .accessibilityLabel("Close")
+            .accessibilityLabel(Localization.Button.close)
     }
 
     private var dragToDismiss: some Gesture {

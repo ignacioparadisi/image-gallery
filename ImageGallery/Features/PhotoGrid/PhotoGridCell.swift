@@ -16,7 +16,7 @@ struct PhotoGridCell: View {
             .overlay {
                 ZStack(alignment: .bottom) {
                     RemoteImage(url: url)
-                    Text(description ?? "The image has no description")
+                    Text(description ?? Localization.PhotoGrid.photoDescriptionPlaceholder)
                         .foregroundStyle(.white)
                         .font(.caption)
                         .lineLimit(2)

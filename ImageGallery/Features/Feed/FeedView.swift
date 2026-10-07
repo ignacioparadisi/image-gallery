@@ -19,12 +19,12 @@ struct FeedView: View {
     
     var body: some View {
         Content(viewModel: viewModel, dismissSearchTrigger: dismissSearchTrigger)
-            .navigationTitle("Feed")
+            .navigationTitle(Localization.Feed.title)
             .softScrollEdges(.top)
             .searchable(text: $viewModel.query)
             .searchSuggestions {
                 if viewModel.recentSearches.isEmpty {
-                    Text("No Recent Searches")
+                    Text(Localization.Feed.noRecentSearches)
                         .frame(maxWidth: .infinity)
                         .foregroundStyle(.secondary)
                         .listRowSeparator(.hidden, edges: .all)

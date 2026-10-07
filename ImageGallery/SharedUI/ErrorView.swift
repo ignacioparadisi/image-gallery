@@ -17,7 +17,7 @@ struct ErrorView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
-            Text((error as? LocalizedError)?.errorDescription ?? "Error")
+            Text((error as? LocalizedError)?.errorDescription ?? Localization.Error.generalError)
                 .font(.headline)
             if let suggestion = (error as? LocalizedError)?.recoverySuggestion {
                 Text(suggestion)
@@ -27,7 +27,7 @@ struct ErrorView: View {
             }
             
             if let retry {
-                Button("Retry") {
+                Button(Localization.Button.retry) {
                     retry()
                 }
             }
@@ -46,10 +46,10 @@ struct ShortErrorView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
-            Text((error as? LocalizedError)?.errorDescription ?? "Error")
+            Text((error as? LocalizedError)?.errorDescription ?? Localization.Error.generalError)
             
             if let retry {
-                Button("Retry") {
+                Button(Localization.Button.retry) {
                     retry()
                 }
             }

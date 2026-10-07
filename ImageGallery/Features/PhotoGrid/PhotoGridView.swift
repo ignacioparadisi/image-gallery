@@ -51,7 +51,7 @@ struct PhotoGridView: View {
     private var overlay: some View {
         switch viewModel.phase {
         case .empty:
-            Text("No Results")
+            Text(Localization.PhotoGrid.emptyResults)
                 .foregroundStyle(.secondary)
         case .loading:
             ProgressView()
