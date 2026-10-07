@@ -43,7 +43,40 @@ struct HTTPClientTests {
             let _ = try await client.request(endpoint: PhotosEndpoint(page: 1, pageSize: 30))
         }
     }
-    
+
+    @Test("URL errors map to NetworkError", arguments: [
+        (URLError.Code.notConnectedToInternet, NetworkError.offline),
+        (.networkConnectionLost, .offline),
+        (.timedOut, .connectionFailed),
+        (.cannotFindHost, .connectionFailed)
+    ])
+    func urlErrorMapping(code: URLError.Code, expectedError: NetworkError) async {
+        let session = MockSession { _ in throw URLError(code) }
+        let client = HTTPClient(session: session, host: "api.unsplash.com", authorization: "test")
+        await #expect(throws: expectedError) {
+            let _ = try await client.request(endpoint: PhotosEndpoint(page: 1, pageSize: 30))
+        }
+    }
+
+    @Test func cancelledRequestThrowsCancellationError() async {
+        let session = MockSession { _ in throw URLError(.cancelled) }
+        let client = HTTPClient(session: session, host: "api.unsplash.com", authorization: "test")
+        await #expect(throws: CancellationError.self) {
+            let _ = try await client.request(endpoint: PhotosEndpoint(page: 1, pageSize: 30))
+        }
+    }
+
+    @Test func invalidJSONThrowsDecodingFailed() async {
+        let session = MockSession { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (Data("not json".utf8), response)
+        }
+        let client = HTTPClient(session: session, host: "api.unsplash.com", authorization: "test")
+        await #expect(throws: NetworkError.decodingFailed) {
+            let _ = try await client.request(endpoint: PhotosEndpoint(page: 1, pageSize: 30))
+        }
+    }
+
 }
 
 struct MockSession: HTTPSession {

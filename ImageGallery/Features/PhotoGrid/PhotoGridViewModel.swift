@@ -77,12 +77,10 @@ class PhotoGridViewModel: ObservableObject {
             } else {
                 phase = nextPage > page.totalPages ? .finished : .idle
             }
+        } catch let error as NetworkError {
+            phase = .failure(error)
         } catch {
-            if let error = error as? NetworkError {
-                phase = .failure(error)
-            } else {
-                phase = Task.isCancelled ? .idle : .failure(.invalidResponse)
-            }
+            phase = Task.isCancelled ? .idle : .failure(.connectionFailed)
         }
     }
     

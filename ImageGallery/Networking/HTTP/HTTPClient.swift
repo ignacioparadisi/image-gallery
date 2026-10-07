@@ -8,8 +8,6 @@
 import Foundation
 import OSLog
 
-// TODO: Move networking to a package so I don't have to use nonisolated everywhere
-
 /// Sends requests to the Unsplash API and decodes their responses.
 struct HTTPClient: APIClient {
     private let logger = Logger(subsystem: "HTTPClient", category: "Network")
@@ -17,7 +15,7 @@ struct HTTPClient: APIClient {
     private let session: HTTPSession
     /// The API host, for example `api.unsplash.com`.
     private let host: String
-    /// Access key, sent in the `Authorization` header of every request.
+    /// Authorization, sent in the `Authorization` header of every request.
     private let authorization: String
 
     init(session: HTTPSession = URLSession.shared, host: String, authorization: String) {
@@ -27,22 +25,41 @@ struct HTTPClient: APIClient {
     }
     
     /// Sends the request and decodes the body into the endpoint's response type.
-    ///
     /// Runs off the main actor so decoding doesn't block the UI.
     @concurrent
     func request<E: Endpoint>(endpoint: E) async throws -> HTTPResponse<E.Response> {
         logger.debug("Requesting from \(endpoint.url(host: host)?.absoluteString ?? "")")
         let (data, response) = try await data(from: endpoint)
-        let body = try JSONDecoder().decode(E.Response.self, from: data)
+        guard let body = try? JSONDecoder().decode(E.Response.self, from: data) else {
+            throw NetworkError.decodingFailed
+        }
         return HTTPResponse(body: body, response: response)
     }
-    
+
     /// Sends the request and returns the raw body, throwing for non-2xx responses.
     func data(from endpoint: any Endpoint) async throws -> (Data, HTTPURLResponse) {
         let request = try createRequest(endpoint: endpoint)
-        let (data, response) = try await session.data(request)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(request)
+        } catch let error as URLError {
+            throw Self.networkError(for: error)
+        }
         let httpResponse = try validate(response: response)
         return (data, httpResponse)
+    }
+
+    /// Maps URLErrors into NetworkError
+    private static func networkError(for error: URLError) -> Error {
+        switch error.code {
+        case .cancelled:
+            CancellationError()
+        case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed:
+            NetworkError.offline
+        default:
+            NetworkError.connectionFailed
+        }
     }
     
     /// Builds the request with the endpoint's URL and method, plus the access key.

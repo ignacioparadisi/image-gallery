@@ -14,7 +14,9 @@ enum NetworkError: LocalizedError, Equatable {
     case rateLimited
     case httpError(statusCode: Int)
     case decodingFailed
-    
+    case offline
+    case connectionFailed
+
     var errorDescription: String? {
         switch self {
         case .invalidURL:
@@ -29,6 +31,10 @@ enum NetworkError: LocalizedError, Equatable {
             "Network error with code \(code)"
         case .decodingFailed:
             "There was an error reading the response"
+        case .offline:
+            "You're offline"
+        case .connectionFailed:
+            "Couldn't connect to Unsplash"
         }
     }
 }
