@@ -32,45 +32,40 @@ struct PhotoDetailView: View {
             ZStack(alignment: .topLeading) {
                 Color.black
                     .opacity(isExpanded ? 1 - dragProgress * 0.3 : 0)
+                    .onTapGesture(perform: dismiss)
+                    .accessibilityAction(.escape, dismiss)
 
-                RemoteImage(url: photo.url) {
-                    RemoteImage(url: photo.thumbnailURL)
-                }
-                .frame(width: frame.width, height: frame.height)
-                .clipped()
-                .offset(x: frame.minX - container.minX, y: frame.minY - container.minY)
-                .accessibilityLabel(photo.description ?? "Photo")
+                Content(photo: photo)
+                    .frame(width: frame.width, height: frame.height)
+                    .clipped()
+                    .offset(x: frame.minX - container.minX, y: frame.minY - container.minY)
             }
         }
         .ignoresSafeArea()
-        .contentShape(Rectangle())
-        .onTapGesture(perform: dismiss)
+        .contentShape(.rect)
         .gesture(dragToDismiss)
         .overlay(alignment: .topLeading) {
             closeButton
         }
-        .accessibilityAction(.escape, dismiss)
         .onAppear {
-            withAnimation(animation) { isExpanded = true }
+            withAnimation(animation) {
+                isExpanded = true
+            }
         }
     }
 
     private var closeButton: some View {
-        Button(action: dismiss) {
-            Image(systemName: "chevron.backward")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(.ultraThinMaterial, in: Circle())
-        }
-        .padding(.horizontal)
-        .opacity(isExpanded && dragOffset == .zero ? 1 : 0)
-        .accessibilityLabel("Close")
+        BackButton(action: dismiss)
+            .padding(.horizontal)
+            .opacity(isExpanded && dragOffset == .zero ? 1 : 0)
+            .accessibilityLabel("Close")
     }
 
     private var dragToDismiss: some Gesture {
         DragGesture()
-            .onChanged { dragOffset = $0.translation }
+            .onChanged {
+                dragOffset = $0.translation
+            }
             .onEnded { value in
                 if abs(value.translation.height) > dismissDistance {
                     dismiss()
@@ -97,6 +92,19 @@ struct PhotoDetailView: View {
         Task {
             try? await Task.sleep(for: .milliseconds(350))
             onDismissed()
+        }
+    }
+}
+
+extension PhotoDetailView {
+    struct Content: View {
+        let photo: Photo
+        
+        var body: some View {
+            RemoteImage(url: photo.url) {
+                RemoteImage(url: photo.thumbnailURL)
+            }
+            .accessibilityLabel(photo.description ?? "Photo")
         }
     }
 }

@@ -12,7 +12,10 @@ struct AppDependencies {
     let imageLoader: ImageLoading
     
     init(configuration: AppConfiguration) {
-        let client = HTTPClient(accessKey: configuration.unsplashAccessKey)
+        let client = HTTPClient(
+            host: configuration.httpHost,
+            authorization: "Client-ID \(configuration.unsplashAccessKey)"
+        )
         photosRepository = PhotosRepositoryImpl(client: client)
         imageLoader = ImageLoader(session: URLSession.images)
     }

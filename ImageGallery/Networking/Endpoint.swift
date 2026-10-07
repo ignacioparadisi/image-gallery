@@ -14,8 +14,6 @@ nonisolated protocol Endpoint: Sendable {
     var method: HTTPMethod { get }
     /// Scheme for the request. `HTTPS`,  `HTTP`
     var scheme: HTTPScheme { get }
-    /// API's host
-    var host: String { get }
     /// Path for the endpoint
     var path: String { get }
     /// Parameters sent in the request
@@ -34,7 +32,7 @@ extension Endpoint {
 
 nonisolated extension Endpoint {
     /// URL created from the endpoint
-    var url: URL? {
+    func url(host: String) -> URL? {
         var components = URLComponents()
         components.scheme = scheme.rawValue
         components.host = host

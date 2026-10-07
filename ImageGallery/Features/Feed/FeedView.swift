@@ -10,6 +10,7 @@ import SwiftUI
 struct FeedView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var viewModel: FeedViewModel
+    /// Used to dismissing the search after the search is done.
     @State private var dismissSearchTrigger: Bool = false
     
     init(viewModel: FeedViewModel) {
