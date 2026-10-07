@@ -29,6 +29,7 @@ final class Router: ObservableObject {
     }
     
     func pop() {
+        guard path.isEmpty == false else { return }
         path.removeLast()
     }
     
