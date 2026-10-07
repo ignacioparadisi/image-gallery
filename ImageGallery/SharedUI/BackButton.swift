@@ -40,7 +40,7 @@ private struct MaterialBackButton: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.white)
                 .frame(width: 44, height: 44)
-                .background(.ultraThinMaterial, in: Circle())
+                .background(.gray.opacity(0.5), in: Circle())
         }
     }
 }

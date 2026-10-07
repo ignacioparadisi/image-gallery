@@ -45,6 +45,7 @@ struct RemoteImage<Placeholder>: View where Placeholder: View {
                     image = loadedImage
                 }
             }
+            .onDisappear { image = nil }
     }
 }
 
