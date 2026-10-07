@@ -27,7 +27,7 @@ struct HTTPClientTests {
     }
     
     @Test("Non 200..<300 status codes map to NetworkError", arguments: [
-        (401, [String: String](), NetworkError.unauthozied),
+        (401, [String: String](), NetworkError.unauthorized),
         (403, ["X-Ratelimit-Remaining": "0"], .rateLimited),
         (403, [:], .httpError(statusCode: 403)),
         (404, [:], .httpError(statusCode: 404)),
