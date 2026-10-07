@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GalleryViewCell: View {
+struct PhotoGridCell: View {
     let url: URL?
     var body: some View {
         Color.gray

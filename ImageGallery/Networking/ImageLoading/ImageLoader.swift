@@ -1,25 +1,13 @@
 //
-//  ImageLoading.swift
+//  ImageLoader.swift
 //  ImageGallery
 //
-//  Created by Ignacio Paradisi on 10/5/26.
+//  Created by Ignacio Paradisi on 10/6/26.
 //
 
 import Foundation
-import CoreGraphics
-import ImageIO
 import OSLog
-
-nonisolated protocol ImageLoading: Sendable {
-    func cachedImage(url: URL?) -> CGImage?
-    func image(url: URL?) async throws -> CGImage
-}
-
-nonisolated enum ImageLoaderError: Error, Equatable {
-    case invalidURL
-    case invalidResponse
-    case invalidData
-}
+import ImageIO
 
 actor ImageLoader: ImageLoading {
     private let logger = Logger(subsystem: "ImageLoader", category: "Cache")
@@ -85,21 +73,4 @@ actor ImageLoader: ImageLoading {
         }
         return image
     }
-}
-
-extension URLSession {
-    static let images: URLSession = {
-        let cacheDirectory = FileManager.default
-            .urls(for: .cachesDirectory, in: .userDomainMask).first?
-            .appending(path: "ImageCache")
-        
-        let configuration = URLSessionConfiguration.default
-        configuration.urlCache = URLCache(
-            memoryCapacity: 10 * 1024 * 1024,
-            diskCapacity: 200 * 1024 * 1024,
-            directory: cacheDirectory
-        )
-        configuration.requestCachePolicy = .returnCacheDataElseLoad
-        return URLSession(configuration: configuration)
-    }()
 }

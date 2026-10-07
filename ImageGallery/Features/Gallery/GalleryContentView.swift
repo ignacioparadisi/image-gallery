@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GalleryContentView: View {
     @ObservedObject var viewModel: GalleryViewModel
+    let namespace: Namespace.ID
     
     private var isSearching: Bool {
         if viewModel.searchViewModel == nil {
@@ -19,11 +20,11 @@ struct GalleryContentView: View {
     
     var body: some View {
         ZStack {
-            PhotoGridView(viewModel: viewModel.feedViewModel)
+            PhotoGridView(viewModel: viewModel.feedViewModel, namespace: namespace, selection: $viewModel.selectedPhoto)
                 .opacity(isSearching ? 0 : 1)
             
             if let searchViewModel = viewModel.searchViewModel {
-                PhotoGridView(viewModel: searchViewModel)
+                PhotoGridView(viewModel: searchViewModel, namespace: namespace, selection: $viewModel.selectedPhoto)
                     .transition(.move(edge: .bottom))
             }
         }

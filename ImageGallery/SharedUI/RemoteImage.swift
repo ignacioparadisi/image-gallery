@@ -7,10 +7,25 @@
 
 import SwiftUI
 
-struct RemoteImage: View {
+extension RemoteImage where Placeholder == Color {
+    init(url: URL?) {
+        self.init(url: url) { Color.gray }
+    }
+}
+
+struct RemoteImage<Placeholder>: View where Placeholder: View {
     @Environment(\.imageLoader) private var imageLoader
     let url: URL?
+    let placeholder: () -> Placeholder?
     @State private var image: CGImage?
+    
+    init(
+        url: URL?,
+        @ViewBuilder placeholder: @escaping () -> Placeholder? = { nil }
+    ) {
+        self.url = url
+        self.placeholder = placeholder
+    }
     
     var body: some View {
         Color.gray.opacity(0.4)
@@ -20,6 +35,8 @@ struct RemoteImage: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .transition(.opacity)
+                } else {
+                    placeholder()
                 }
             }
             .task {
@@ -35,6 +52,6 @@ struct RemoteImage: View {
 #Preview {
     RemoteImage(
         url: URL(string: "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMDkzNjQ0fDB8MXxzZWFyY2h8MXx8RG9nfGVufDB8fHx8MTc5MTIxOTA4NXww&ixlib=rb-4.1.0&q=80&w=200")
-    )
+    ) { Color.gray }
 }
 

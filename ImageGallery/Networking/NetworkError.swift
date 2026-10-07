@@ -15,10 +15,6 @@ enum NetworkError: LocalizedError, Equatable {
     case httpError(statusCode: Int)
     case decodingFailed
     
-    var recoverySuggestion: String? {
-        "Hola"
-    }
-    
     var errorDescription: String? {
         switch self {
         case .invalidURL:
