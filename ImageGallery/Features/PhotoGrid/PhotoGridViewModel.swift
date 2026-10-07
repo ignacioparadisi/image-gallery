@@ -23,7 +23,6 @@ class PhotoGridViewModel: ObservableObject {
     
     @Published private(set) var photos: [Photo] = []
     @Published private(set) var phase: Phase = .idle
-    @Published private(set) var phaseStyle: PhaseStyle = .fullScreen
     
     private let prefetchCount = 10
     private var nextPage: Int = 1
@@ -31,8 +30,11 @@ class PhotoGridViewModel: ObservableObject {
     private var task: Task<Void, Never>?
     let pageSize: Int = 30
     
-    var isLoading: Bool {
-        phase == .loading && photos.isEmpty
+    var phaseStyle: PhaseStyle {
+        if photos.isEmpty {
+            return .fullScreen
+        }
+        return .footer
     }
     
     func cleanSearch() {
@@ -42,7 +44,6 @@ class PhotoGridViewModel: ObservableObject {
     func loadFirstPageIfNeeded() {
         guard photos.isEmpty, phase == .idle else { return }
         phase = .loading
-        phaseStyle = photos.isEmpty ? .fullScreen : .footer
         task = Task { await fetchNextPage() }
     }
     
@@ -52,7 +53,6 @@ class PhotoGridViewModel: ObservableObject {
             return
         }
         phase = .loading
-        phaseStyle = photos.isEmpty ? .fullScreen : .footer
         task = Task { await fetchNextPage() }
     }
     
@@ -72,7 +72,6 @@ class PhotoGridViewModel: ObservableObject {
             try Task.checkCancellation()
             photos += page.results.filter { seenIDs.insert($0.id).inserted }
             nextPage += 1
-            phaseStyle = photos.isEmpty ? .fullScreen : .footer
             if photos.isEmpty {
                 phase = .empty
             } else {
@@ -80,7 +79,6 @@ class PhotoGridViewModel: ObservableObject {
             }
         } catch {
             if let error = error as? NetworkError {
-                phaseStyle = photos.isEmpty ? .fullScreen : .footer
                 phase = .failure(error)
             } else {
                 phase = Task.isCancelled ? .idle : .failure(.invalidResponse)
