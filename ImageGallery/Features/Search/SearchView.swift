@@ -21,6 +21,7 @@ struct SearchView: View {
             hiddenPhotoID: router.presentedPhoto?.id,
             onSelect: router.showPhoto
         )
+        .equatable()
         .navigationTitle(viewModel.query)
         .navigationBarTitleDisplayMode(.inline)
         .softScrollEdges(.top)

@@ -19,7 +19,8 @@ struct FeedView: View {
     }
     
     var body: some View {
-        Content(viewModel: viewModel, dismissSearchTrigger: dismissSearchTrigger)
+        Content(viewModel: viewModel)
+            .background(DismissSearchOnChange(trigger: dismissSearchTrigger))
             .navigationTitle(Localization.Feed.title)
             .softScrollEdges(.top)
             .searchable(text: $query)
@@ -59,9 +60,7 @@ struct FeedView: View {
 
     struct Content: View {
         @EnvironmentObject private var router: Router
-        @Environment(\.dismissSearch) private var dismissSearch
         @ObservedObject var viewModel: FeedViewModel
-        let dismissSearchTrigger: Bool
 
         var body: some View {
             PhotoGridView(
@@ -69,9 +68,19 @@ struct FeedView: View {
                 hiddenPhotoID: router.presentedPhoto?.id,
                 onSelect: router.showPhoto
             )
-            .onChange(of: dismissSearchTrigger) { _ in
+            .equatable()
+        }
+    }
+}
+
+private struct DismissSearchOnChange: View {
+    @Environment(\.dismissSearch) private var dismissSearch
+    let trigger: Bool
+
+    var body: some View {
+        Color.clear
+            .onChange(of: trigger) { _ in
                 dismissSearch()
             }
-        }
     }
 }

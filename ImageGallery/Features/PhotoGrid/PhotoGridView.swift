@@ -7,11 +7,15 @@
 
 import SwiftUI
 
-struct PhotoGridView: View {
+struct PhotoGridView: View, Equatable {
     @ObservedObject var viewModel: PhotoGridViewModel
     var hiddenPhotoID: Photo.ID?
     let onSelect: (Photo, CGRect) -> Void
     private let column = GridItem(.adaptive(minimum: 130), spacing: 2)
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.viewModel === rhs.viewModel && lhs.hiddenPhotoID == rhs.hiddenPhotoID
+    }
 
     var body: some View {
         ScrollView {
