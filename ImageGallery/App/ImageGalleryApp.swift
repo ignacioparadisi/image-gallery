@@ -1,20 +1,5 @@
 import SwiftUI
 
-struct AppDependencies {
-    let photosRepository: PhotosRepository
-    let imageLoader: ImageLoading
-    
-    init(configuration: AppConfiguration) {
-        let client = HTTPClient(accessKey: configuration.unsplashAccessKey)
-        photosRepository = PhotosRepositoryImpl(client: client)
-        imageLoader = ImageLoader(session: URLSession.images)
-    }
-}
-
-extension EnvironmentValues {
-    @Entry var imageLoader: ImageLoading = ImageLoader(session: URLSession.images)
-}
-
 @main struct ImageGalleryApp: App {
     let appDependencies: Result<AppDependencies, Error>
     

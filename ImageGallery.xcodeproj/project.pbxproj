@@ -25,6 +25,8 @@
 		32CB3E153073F02600482EA0 /* Exceptions for "ImageGallery" folder in "ImageGallery" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/Configuration/Environment.xcconfig,
+				App/Configuration/Template.xcconfig,
 				Info.plist,
 			);
 			target = 000000000000000100000000 /* ImageGallery */;

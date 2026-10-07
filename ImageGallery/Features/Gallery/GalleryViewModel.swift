@@ -12,14 +12,13 @@ import Combine
 class GalleryViewModel: ObservableObject {
     @Published var query = ""
     @Published var selectedPhoto: Photo?
-//    @Published private(set) var content: Content = .feed
+    @Published private(set) var searchViewModel: PhotoGridViewModel?
+    
+    let feedViewModel: PhotoGridViewModel
     
     private let pageSize: Int = 30
     private let repository: PhotosRepository
-    let feedViewModel: PhotoGridViewModel
-    @Published private(set) var searchViewModel: PhotoGridViewModel?
     private var activeQuery: String = ""
-    
     private var cancellables: Set<AnyCancellable> = []
     
     init(repository: PhotosRepository) {

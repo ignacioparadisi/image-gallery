@@ -16,16 +16,3 @@ struct Photo: Identifiable, Hashable, Equatable {
     let thumbnailURL: URL?
     let url: URL?
 }
-
-extension Photo {
-    init(from dto: PhotoDTO) {
-        self.id = dto.id
-        self.width = dto.width
-        self.height = dto.height
-        self.description = dto.altDescription ?? dto.description
-        self.blurHash = dto.blurHash
-        self.thumbnailURL = URL(string: dto.urls.small ?? "")
-        self.url = URL(string: dto.urls.regular ?? "")
-    }
-}
-
