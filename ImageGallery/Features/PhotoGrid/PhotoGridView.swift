@@ -8,29 +8,20 @@
 import SwiftUI
 
 struct PhotoGridView: View {
-    @ObservedObject var viewModel: PhotoGridViewModel
-    let namespace: Namespace.ID
+    let photos: [Photo]
     @Binding var selection: Photo?
     private let column = GridItem(.adaptive(minimum: 130), spacing: 2)
+    let onLoadMore: ((Photo) -> Void)
     
     var body: some View {
         ScrollView {
             LazyVGrid(columns: [column], spacing: 2) {
-                ForEach(viewModel.photos) { photo in
+                ForEach(photos) { photo in
                     PhotoGridCell(url: photo.thumbnailURL)
-                        .photoViewerSource(photo)
                         .onAppear {
-                            viewModel.loadNextPageIfNeeded(currentPhoto: photo)
+                            onLoadMore(photo)
                         }
                 }
-            }
-        }
-        .alert(error: $viewModel.error) {
-            Button("Cancel") {
-                
-            }
-            Button("Retry") {
-                
             }
         }
     }

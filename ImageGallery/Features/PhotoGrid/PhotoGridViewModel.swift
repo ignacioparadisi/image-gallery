@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-final class PhotoGridViewModel: ObservableObject {
+class PhotoGridViewModel: ObservableObject {
     enum Phase: Equatable {
         case idle
         case loading
@@ -20,14 +20,14 @@ final class PhotoGridViewModel: ObservableObject {
     @Published private(set) var phase: Phase = .idle
     @Published var error: NetworkError?
     
-    private let dataSource: PhotoGridDataSource
     private let prefetchCount = 10
     private var nextPage: Int = 1
     private var seenIDs = Set<Photo.ID>()
     private var task: Task<Void, Never>?
+    let pageSize: Int = 30
     
-    init(dataSource: PhotoGridDataSource) {
-        self.dataSource = dataSource
+    func cleanSearch() {
+        photos.removeAll()
     }
     
     func loadFirstPageIfNeeded() {
@@ -45,9 +45,13 @@ final class PhotoGridViewModel: ObservableObject {
         task = Task { await fetchNextPage() }
     }
     
+    func loadPage(_ page: Int, pageSize: Int) async throws -> Page<Photo> {
+        fatalError("\(Self.self) must override loadPage(_:)")
+    }
+    
     private func fetchNextPage() async {
         do {
-            let page = try await dataSource.loadPage(nextPage)
+            let page = try await loadPage(nextPage, pageSize: pageSize)
             try Task.checkCancellation()
             photos += page.results.filter { seenIDs.insert($0.id).inserted }
             nextPage += 1

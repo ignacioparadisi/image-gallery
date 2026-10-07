@@ -9,4 +9,5 @@ import SwiftUI
 
 extension EnvironmentValues {
     @Entry var imageLoader: ImageLoading = ImageLoader(session: URLSession.images)
+    @Entry var router: Router = Router()
 }
