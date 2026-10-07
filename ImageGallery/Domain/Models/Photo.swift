@@ -11,20 +11,10 @@ struct Photo: Identifiable, Hashable, Equatable {
     let id: String
     let width: Int
     let height: Int
-    let color: String?
-    let altDescription: String?
     let description: String?
     let blurHash: String?
-    let urls: URLs
-    
-    struct URLs: Hashable, Equatable {
-        let raw: String?
-        let full: String?
-        let regular: String?
-        let small: String?
-        let thumb: String?
-        let smallS3: String?
-    }
+    let thumbnailURL: URL?
+    let url: URL?
 }
 
 extension Photo {
@@ -32,18 +22,10 @@ extension Photo {
         self.id = dto.id
         self.width = dto.width
         self.height = dto.height
-        self.color = dto.color
-        self.altDescription = dto.altDescription
-        self.description = dto.description
+        self.description = dto.altDescription ?? dto.description
         self.blurHash = dto.blurHash
-        self.urls = URLs(
-            raw: dto.urls.raw,
-            full: dto.urls.full,
-            regular: dto.urls.regular,
-            small: dto.urls.small,
-            thumb: dto.urls.thumb,
-            smallS3: dto.urls.smallS3
-        )
+        self.thumbnailURL = URL(string: dto.urls.small ?? "")
+        self.url = URL(string: dto.urls.regular ?? "")
     }
 }
 

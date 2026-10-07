@@ -10,23 +10,8 @@ import Combine
 
 // @Observable is only available from iOS 17
 class GalleryViewModel: ObservableObject {
-    enum Content: Equatable {
-        case feed
-        case searchResults(PhotoGridViewModel)
-        
-        static func ==(lhs: Content, rhs: Content) -> Bool {
-            switch (lhs, rhs) {
-            case (.feed, .feed):
-                return true
-            case (searchResults(let lhsViewModel), .searchResults(let rhsViewModel)):
-                return lhsViewModel === rhsViewModel
-            default:
-                return false
-            }
-        }
-    }
-    
     @Published var query = ""
+    @Published var selectedPhoto: Photo?
 //    @Published private(set) var content: Content = .feed
     
     private let pageSize: Int = 30
