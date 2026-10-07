@@ -37,7 +37,7 @@ struct HTTPClient: APIClient {
     }
 
     /// Sends the request and returns the raw body, throwing for non-2xx responses.
-    func data(from endpoint: any Endpoint) async throws -> (Data, HTTPURLResponse) {
+    private func data(from endpoint: any Endpoint) async throws -> (Data, HTTPURLResponse) {
         let request = try createRequest(endpoint: endpoint)
         let data: Data
         let response: URLResponse
@@ -81,7 +81,7 @@ struct HTTPClient: APIClient {
         case 200..<300:
             return httpResponse
         case 401:
-            throw NetworkError.unauthozied
+            throw NetworkError.unauthorized
         case 403 where httpResponse.value(forHTTPHeaderField: "X-Ratelimit-Remaining") == "0":
             throw NetworkError.rateLimited
         default:

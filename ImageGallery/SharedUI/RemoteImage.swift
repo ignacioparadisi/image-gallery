@@ -40,7 +40,6 @@ struct RemoteImage<Placeholder>: View where Placeholder: View {
                 }
             }
             .task {
-                // TODO: Handle error
                 let loadedImage = try? await imageLoader.image(url: url)
                 withAnimation(.smooth(duration: 0.1)) {
                     image = loadedImage

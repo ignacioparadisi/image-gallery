@@ -10,7 +10,7 @@ import Foundation
 enum NetworkError: LocalizedError, Equatable {
     case invalidURL
     case invalidResponse
-    case unauthozied
+    case unauthorized
     case rateLimited
     case httpError(statusCode: Int)
     case decodingFailed
@@ -22,8 +22,8 @@ enum NetworkError: LocalizedError, Equatable {
         case .invalidURL:
             "The URL is not valid"
         case .invalidResponse:
-            "The responde is not valid"
-        case .unauthozied:
+            "The response is not valid"
+        case .unauthorized:
             "Unauthorized"
         case .rateLimited:
             "You've reached the request limit rate for this hour"

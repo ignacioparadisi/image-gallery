@@ -9,5 +9,4 @@ import Foundation
 
 nonisolated protocol APIClient: Sendable {
     func request<E: Endpoint>(endpoint: E) async throws -> HTTPResponse<E.Response>
-    func data(from endpoint: any Endpoint) async throws -> (Data, HTTPURLResponse)
 }

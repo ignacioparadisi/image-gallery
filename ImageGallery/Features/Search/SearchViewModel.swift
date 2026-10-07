@@ -12,23 +12,11 @@ class SearchViewModel: PhotoGridViewModel {
     @Published var query = ""
     private let repository: PhotosRepository
     private let recentSearchesRepository: RecentSearchesRepository
-    private var cancellables = Set<AnyCancellable>()
 
     init(query: String, repository: PhotosRepository, recentSearchesRepository: RecentSearchesRepository) {
         self.query = query
         self.repository = repository
         self.recentSearchesRepository = recentSearchesRepository
-
-        super.init()
-
-        self.$query
-            .dropFirst()
-            .debounce(for: .milliseconds(400), scheduler: RunLoop.main)
-            .sink { [weak self] query in
-                self?.cleanSearch()
-                self?.loadFirstPageIfNeeded()
-            }
-            .store(in: &cancellables)
     }
 
     override func loadPage(_ page: Int, pageSize: Int) async throws -> Page<Photo> {

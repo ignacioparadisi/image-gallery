@@ -24,7 +24,7 @@ nonisolated struct PhotoDTO: Decodable, Sendable, Identifiable {
         case color
         case altDescription = "alt_description"
         case description
-        case blurHash
+        case blurHash = "blur_hash"
         case urls
     }
 }

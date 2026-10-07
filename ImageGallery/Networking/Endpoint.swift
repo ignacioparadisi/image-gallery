@@ -25,7 +25,6 @@ nonisolated protocol Endpoint: Sendable {
 extension Endpoint {
     var method: HTTPMethod { .get }
     var scheme: HTTPScheme { .https }
-    var host: String { "api.unsplash.com" }
     var parameters: [URLQueryItem] { [] }
     var body: Encodable? { nil }
 }
