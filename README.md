@@ -27,7 +27,7 @@ A SwiftUI app that shows the [Unsplash](https://unsplash.com) feed in a grid, le
    UNSPLASH_ACCESS_KEY = your_access_key_here
    ```
 
-`Environment.xcconfig` is in `.gitignore`, so the key never gets committed. If it's missing, the app shows these instructions instead of the feed.
+`Environment.xcconfig` is in `.gitignore`, so the key never gets committed. The project won't build until that file exists, so make sure to do step 2 before running it. If the key is empty, the app shows these instructions instead of the feed.
 
 Keep in mind that Unsplash demo apps are limited to 50 requests per hour. Loading images doesn't count, but feed pages and searches do.
 
@@ -35,17 +35,15 @@ Keep in mind that Unsplash demo apps are limited to 50 requests per hour. Loadin
 
 I went with MVVM and split the code into layers, where each one only knows about the layers below it:
 
-- `Feature` knows about `Domain`
-- `Data` knows about `Domain`, `UnsplashAPI`, and `Networking`
-- `UnsplashAPI` knows about `Networking`
+- `Feature` knows about `Domain`, plus `NetworkError` (to show the right error message) and the image loader from `Networking`
+- `Data` knows about `Domain` and `Networking`
 
-| Folder           | What's in it                                                                            |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| `App`            | App entry point, `AppDependencies`, `Router` and configuration                          |
-| `Domain`         | `Photo`, `Page`, `RecentSearch`, the LRU logic (`RecentSearches`), repository protocols |
-| `Data`           | `PhotosRepositoryImpl`, `UserDefaultsRecentSearchesRepository`, DTO mapping             |
-| `UnsplashAPI`    | Unsplash endpoints and response DTOs                                                    |
-| `Networking`     | `HTTPClient`, `HTTPSession`, `NetworkError`, `ImageLoader`                              |
+| Folder           | What's in it                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| `App`            | App entry point, `AppDependencies`, `Router` and configuration                                   |
+| `Domain`         | `Photo`, `Page`, `RecentSearch`, the LRU logic (`RecentSearches`), repository protocols          |
+| `Data`           | `PhotosRepositoryImpl`, `UserDefaultsRecentSearchesRepository`, DTO mapping                      |
+| `Networking`     | `HTTPClient`, `HTTPSession`, `NetworkError`, `ImageLoader`, and the Unsplash endpoints and DTOs in `UnsplashAPI` |
 | `Features`       | Feed, Search, PhotoGrid, PhotoDetail                                                    |
 | `SharedUI`       | Reusable views and helpers (`RemoteImage`, `ErrorView`, `BackButton`…)                  |
 | `PreviewContent` | Sample data for SwiftUI previews (debug only)                                           |
@@ -128,8 +126,10 @@ Images already downloaded stay in the disk cache and are used without asking the
 
 I used Swift Testing, with mocks for the network session and the repositories. The tests cover:
 
+- the endpoints' URLs
 - the HTTP client: the authorization header, status codes, network and decoding errors
 - reading response headers
+- the memory cost of a cached image
 - the repositories, including pagination from headers and persisting recent searches
 - the recent searches rules (order, limit of 10, duplicates)
 - the ViewModels: pagination and recent searches
@@ -139,20 +139,22 @@ I used Swift Testing, with mocks for the network session and the repositories. T
 ### What keeps scrolling smooth
 
 - `LazyVGrid` only creates cells as they come on screen.
-- Images are loaded at the size they're shown and decoded off the main thread.
+- Images are downloaded at a size close to the one they're shown at (`small` in the grid, `regular` in the detail) and decoded off the main thread.
 - Decoded images are cached in memory, files on disk, and the same image is never downloaded twice at the same time.
 - The next page is requested before you reach the end of the grid.
 - Grid cells only receive simple values (a URL and a description), so SwiftUI can skip cells whose data didn't change.
-- Image is deallocated when the cell disappears to use less memory while scrolling. It is re-feched from cache when it appears again.
+- Typing in the search field doesn't redraw the grid. The search text lives in the view, not in the ViewModel the grid observes.
+- The grid is `Equatable` and ignores its tap closure, so it isn't redrawn just because the screen that contains it was.
+- A cell lets go of its image when it disappears, to use less memory while scrolling. When it appears again, the image comes back from the cache.
 
 ### Profiling with Instruments
 
-Measured on iPhone 15 Pro Max (iOS 27.0.1), Release build, scrolling the feed through about 2000 photos.
+Measured on iPhone 15 Pro Max (iOS 27.0.1), Release build, scrolling the feed through about 200 photos.
 
 #### Allocations
 
 **Results**
-Scrolling the feed for 45 seconds, over aroud 200 photos, memory rose while the first images loaded and then stayed flat at about 160 MiB. About 130 MiB of that is decoded images kept in the memory cache (200 images, around 0.6 MiB each), and the cache keeps releasing older images as you scroll.
+Scrolling the feed for 45 seconds, memory rose while the first images loaded and then stayed flat at about 160 MiB. About 130 MiB of that is decoded images kept in the memory cache (200 images, around 0.6 MiB each), and the cache keeps releasing older images as you scroll.
 
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/allocations.png" alt="Allocations Instrument Results" />
 
@@ -173,7 +175,7 @@ In a 34-second run that included scrolling, opening photos and searching, there 
 #### SwiftUI
 
 **Results**
-With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and searching, only 3 updates from the app's own views took longer than usual, each about 0.5 ms. Most of the longer updates (111) were the lazy grid's layout while scrolling, under 3 ms each
+With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and searching, only 3 updates from the app's own views took longer than usual, each about 0.5 ms. Most of the longer updates (111) were the lazy grid's layout while scrolling, under 3 ms each.
 
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/swiftui-instrument-1.png" alt="SwiftUI Instrument Results 1" />
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/swiftui-instrument-2.png" alt="SwiftUI Instrument Results 2" />
@@ -197,7 +199,6 @@ With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and se
 - Interactive drag-to-dismiss, pinch to zoom, and handling rotation in the photo detail.
 - Move to `@Observable`, `scrollPosition` and animation completion handlers if the minimum version went up to iOS 17.
 - Move networking into a local Swift package.
-- More tests: `ImageLoader`, endpoints, mapping, and UI tests for the main flows.
+- More tests: how `ImageLoader` shares downloads, DTO mapping, and UI tests for the main flows.
 - Pull to refresh on the feed.
-- Localize the user-facing strings.
 - Add Accessibility with full VoiceOver and Dynamic Type support.

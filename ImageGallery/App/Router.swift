@@ -32,10 +32,6 @@ final class Router: ObservableObject {
         guard path.isEmpty == false else { return }
         path.removeLast()
     }
-    
-    func popToRoot() {
-        path.removeLast(path.count)
-    }
 }
 
 enum Route: Hashable {

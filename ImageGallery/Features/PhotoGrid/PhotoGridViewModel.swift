@@ -37,10 +37,6 @@ class PhotoGridViewModel: ObservableObject {
         return .footer
     }
     
-    func cleanSearch() {
-        photos.removeAll()
-    }
-    
     func loadFirstPageIfNeeded() {
         guard photos.isEmpty, phase == .idle else { return }
         phase = .loading
@@ -83,9 +79,4 @@ class PhotoGridViewModel: ObservableObject {
             phase = Task.isCancelled ? .idle : .failure(.connectionFailed)
         }
     }
-    
-    func cancel() {
-        task?.cancel()
-    }
-    
 }
