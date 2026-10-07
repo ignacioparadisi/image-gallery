@@ -15,13 +15,24 @@ import SwiftUI
             switch appDependencies {
             case .success(let dependencies):
                 NavigationStack(path: $router.path) {
-                    FeedView(viewModel: FeedViewModel(repository: dependencies.photosRepository))
-                        .navigationDestination(for: Route.self) { route in
-                            switch route {
-                            case .search(let query):
-                                SearchView(viewModel: SearchViewModel(query: query, repository: dependencies.photosRepository))
-                            }
+                    FeedView(
+                        viewModel: FeedViewModel(
+                            repository: dependencies.photosRepository,
+                            recentSearchesRepository: dependencies.recentSearchesRepository
+                        )
+                    )
+                    .navigationDestination(for: Route.self) { route in
+                        switch route {
+                        case .search(let query):
+                            SearchView(
+                                viewModel: SearchViewModel(
+                                    query: query,
+                                    repository: dependencies.photosRepository,
+                                    recentSearchesRepository: dependencies.recentSearchesRepository
+                                )
+                            )
                         }
+                    }
                 }
                 .photoDetail(router.presentedPhoto, onDismissed: router.dismissPhoto)
                 .environment(\.imageLoader, dependencies.imageLoader)

@@ -23,22 +23,39 @@ struct FeedView: View {
             .softScrollEdges(.top)
             .searchable(text: $viewModel.query)
             .searchSuggestions {
-                Text("No Recent Searches")
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(.secondary)
-                    .listRowSeparator(.hidden, edges: .all)
+                if viewModel.recentSearches.isEmpty {
+                    Text("No Recent Searches")
+                        .frame(maxWidth: .infinity)
+                        .foregroundStyle(.secondary)
+                        .listRowSeparator(.hidden, edges: .all)
+                } else {
+                    ForEach(viewModel.recentSearches) { search in
+                        Button {
+                            openSearch(search.query)
+                        } label: {
+                            RecentSearchRow(search: search)
+                        }
+                        .foregroundStyle(.primary)
+                    }
+                }
             }
             .onSubmit(of: .search) {
-                router.navigate(to: .search(query: viewModel.query))
+                openSearch(viewModel.query)
             }
             .onAppear {
                 viewModel.loadFirstPageIfNeeded()
+                viewModel.loadRecentSearches()
             }
             .onDisappear {
                 dismissSearchTrigger.toggle()
             }
     }
-    
+
+    private func openSearch(_ text: String) {
+        guard let query = viewModel.submitSearch(text) else { return }
+        router.navigate(to: .search(query: query))
+    }
+
     struct Content: View {
         @EnvironmentObject private var router: Router
         @Environment(\.dismissSearch) private var dismissSearch
