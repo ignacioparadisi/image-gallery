@@ -9,7 +9,6 @@ import Foundation
 import Combine
 
 class FeedViewModel: PhotoGridViewModel {
-    @Published var query = ""
     @Published private(set) var recentSearches: [RecentSearch] = []
     private let repository: PhotosRepository
     private let recentSearchesRepository: RecentSearchesRepository
