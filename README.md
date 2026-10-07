@@ -153,20 +153,29 @@ Measured on iPhone 15 Pro Max (iOS 27.0.1), Release build, scrolling the feed th
 **Results**
 Scrolling the feed for 45 seconds, over aroud 200 photos, memory rose while the first images loaded and then stayed flat at about 160 MiB. About 130 MiB of that is decoded images kept in the memory cache (200 images, around 0.6 MiB each), and the cache keeps releasing older images as you scroll.
 
+<img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/allocations.png" alt="Allocations Instrument Results" />
+
 #### Time Profiler
 
 **Results**
 Image decoding and JSON parsing run on background threads; the main thread is mostly SwiftUI layout and rendering. The thermal state stayed nominal while scrolling.
+
+<img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/time-profiler.png" alt="Time Profile Instrument Results" />
 
 #### Animation Hitches
 
 **Results**
 In a 34-second run that included scrolling, opening photos and searching, there were 5 hitches. Four were one or two frames (8–12 ms on a 120 Hz display). The longest, 67 ms, happened when the keyboard appeared for the first time after tapping the search field, which is iOS loading the keyboard rather than the app's own work.
 
+<img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/animation-hitches.png" alt="Animation Hitches Instrument Results" />
+
 #### SwiftUI
 
 **Results**
 With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and searching, only 3 updates from the app's own views took longer than usual, each about 0.5 ms. Most of the longer updates (111) were the lazy grid's layout while scrolling, under 3 ms each
+
+<img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/swiftui-instrument-1.png" alt="SwiftUI Instrument Results 1" />
+<img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/swiftui-instrument-2.png" alt="SwiftUI Instrument Results 2" />
 
 ## Trade-offs
 
@@ -191,5 +200,3 @@ With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and se
 - Pull to refresh on the feed.
 - Localize the user-facing strings.
 - Add Accessibility with full VoiceOver and Dynamic Type support.
-
-<!-- TODO: prioritize or trim this list -->
