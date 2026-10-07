@@ -7,51 +7,46 @@
 
 import SwiftUI
 
+struct SoftScrollEdges: ViewModifier {
+    let edges: Edge.Set
+    
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .scrollEdgeEffectStyle(.soft, for: edges)
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func softScrollEdges(_ edges: Edge.Set) -> some View {
+        self
+            .modifier(SoftScrollEdges(edges: edges))
+    }
+}
+
 struct GalleryView: View {
-    @StateObject var viewModel: GalleryViewModel
+    private let column = GridItem(.adaptive(minimum: 100), spacing: 2)
+    
+    @StateObject private var viewModel: GalleryViewModel
     
     init(viewModel: GalleryViewModel) {
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
     
-    let column = GridItem(.adaptive(minimum: 100), spacing: 2)
-                          
     var body: some View {
-        Content()
-            .onAppear {
-                viewModel.loadFirstPageIfNeeded()
-            }
-    }
-    
-    @ViewBuilder
-    func Content() -> some View {
-        switch viewModel.state {
-        case .loading:
-            ProgressView()
-        case .empty:
-            Text("Empty")
-        case .failure(let error):
-            Text(error.localizedDescription)
-        case .loaded:
-            ScrollView {
-                LazyVGrid(columns: [column], spacing: 2) {
-                    ForEach(viewModel.photos) { photo in
-                        if let url = photo.urls.thumb {
-                            GalleryViewCell(url: URL(string: url))
-                                .onAppear { viewModel.loadNextPageIfNeeded(currentPhoto: photo)
-                                }
-                        }
-                    }
-                }
-            }
+        NavigationStack {
+            GalleryContentView(viewModel: viewModel)
+                .softScrollEdges([.top])
+                .searchable(text: $viewModel.query, prompt: "Search photos")
+                .navigationTitle("Feed")
+                .toolbarBackground(.visible, for: .navigationBar)
+        }
+        .onAppear {
+            viewModel.fetchFeed()
         }
     }
-}
-
-#Preview {
-    GalleryView(
-        viewModel: GalleryViewModel(
-            repository: PreviewPhotosRepository()
-        )
-    )
 }

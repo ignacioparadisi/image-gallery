@@ -9,62 +9,65 @@ import Foundation
 import Combine
 
 // @Observable is only available from iOS 17
-final class GalleryViewModel: ObservableObject {
-    enum ViewState {
-        case loading
-        case loaded
-        case empty
-        case failure(Error)
+class GalleryViewModel: ObservableObject {
+    enum Content: Equatable {
+        case feed
+        case searchResults(PhotoGridViewModel)
+        
+        static func ==(lhs: Content, rhs: Content) -> Bool {
+            switch (lhs, rhs) {
+            case (.feed, .feed):
+                return true
+            case (searchResults(let lhsViewModel), .searchResults(let rhsViewModel)):
+                return lhsViewModel === rhsViewModel
+            default:
+                return false
+            }
+        }
     }
     
-    enum PaginationState {
-        case idle
-        case loading
-        case loaded
-        case failure(Error)
-    }
+    @Published var query = ""
+//    @Published private(set) var content: Content = .feed
     
-    @Published private(set) var state: ViewState = .loading
-    @Published private(set) var paginationState: PaginationState = .idle
-    @Published private(set) var photos: [PhotoDTO] = []
-    
+    private let pageSize: Int = 30
     private let repository: PhotosRepository
-    private let prefetchThreshold: Int = 10
-    private var seenIDs: Set<String> = []
-    private var nextPage: Int = 1
+    let feedViewModel: PhotoGridViewModel
+    @Published private(set) var searchViewModel: PhotoGridViewModel?
+    private var activeQuery: String = ""
     
+    private var cancellables: Set<AnyCancellable> = []
     
     init(repository: PhotosRepository) {
         self.repository = repository
+        self.feedViewModel = PhotoGridViewModel(dataSource: FeedGridDataSource(pageSize: pageSize, repository: self.repository))
+        
+        self.$query
+            .dropFirst()
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .sink { [weak self] query in
+                self?.search(query: query)
+            }
+            .store(in: &cancellables)
     }
     
-    func loadFirstPageIfNeeded() {
-        guard photos.isEmpty, case .idle = paginationState else { return }
-        startLoading()
-    }
-    
-    func loadNextPageIfNeeded(currentPhoto photo: PhotoDTO) {
-        guard case .idle = paginationState, photos.suffix(prefetchThreshold).contains(where: { $0.id == photo.id }) else {
+    private func search(query: String) {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedQuery.isEmpty == false else {
+            searchViewModel = nil
             return
         }
-        startLoading()
+        
+        searchViewModel = PhotoGridViewModel(
+            dataSource: SearchGridDataSource(
+                pageSize: pageSize,
+                query: trimmedQuery,
+                repository: repository
+            )
+        )
+        searchViewModel?.loadFirstPageIfNeeded()
     }
     
-    private func startLoading() {
-        paginationState = .loading
-        Task { await loadNextPage() }
+    func fetchFeed() {
+        feedViewModel.loadFirstPageIfNeeded()
     }
-    
-    private func loadNextPage() async {
-        do {
-            let page = try await repository.fetchPhotos(page: nextPage)
-            let newPhotos = page.filter {  seenIDs.insert($0.id).inserted }
-            photos.append(contentsOf: newPhotos)
-            nextPage += 1
-            paginationState = .idle
-            state = photos.isEmpty ? .empty : .loaded
-        } catch {
-            state = .failure(error)
-        }
-    }
-}
+ }

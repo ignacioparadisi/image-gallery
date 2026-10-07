@@ -12,6 +12,7 @@ struct PhotosEndpoint: Endpoint {
     typealias Response = [PhotoDTO]
     
     let page: Int
+    let pageSize: Int
     
     var path: String {
         return "/photos"
@@ -19,7 +20,8 @@ struct PhotosEndpoint: Endpoint {
     
     var parameters: [URLQueryItem] {
         return [
-            URLQueryItem(name: "page", value: String(describing: page))
+            URLQueryItem(name: "page", value: String(describing: page)),
+            URLQueryItem(name: "per_page", value: String(describing: pageSize))
         ]
     }
 }

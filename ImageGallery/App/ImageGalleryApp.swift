@@ -7,8 +7,6 @@ struct AppDependencies {
     init(configuration: AppConfiguration) {
         let client = HTTPClient(accessKey: configuration.unsplashAccessKey)
         photosRepository = PhotosRepositoryImpl(client: client)
-        
-        let session = URLSession(configuration: .default)
         imageLoader = ImageLoader(session: URLSession.images)
     }
 }
@@ -29,8 +27,10 @@ extension EnvironmentValues {
         WindowGroup {
             switch appDependencies {
             case .success(let dependencies):
-                GalleryView(viewModel: GalleryViewModel(repository: dependencies.photosRepository))
-                    .environment(\.imageLoader, dependencies.imageLoader)
+                GalleryView(
+                    viewModel: GalleryViewModel(repository: dependencies.photosRepository)
+                )
+                .environment(\.imageLoader, dependencies.imageLoader)
             case .failure(let failure):
                 Text("There was an error")
             }

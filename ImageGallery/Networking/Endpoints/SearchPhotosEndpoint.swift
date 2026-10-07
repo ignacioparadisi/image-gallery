@@ -15,6 +15,7 @@ struct SearchPhotosEndpoint: Endpoint {
     let text: String
     /// Page to be fetched
     let page: Int
+    let pageSize: Int
     
     var path: String {
         return "/search/photos"
@@ -23,7 +24,8 @@ struct SearchPhotosEndpoint: Endpoint {
     var parameters: [URLQueryItem] {
         return [
             URLQueryItem(name: "query", value: text),
-            URLQueryItem(name: "page", value: String(describing: page))
+            URLQueryItem(name: "page", value: String(describing: page)),
+            URLQueryItem(name: "per_page", value: String(describing: pageSize))
         ]
     }
 }
