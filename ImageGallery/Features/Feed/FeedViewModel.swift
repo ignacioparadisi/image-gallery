@@ -23,7 +23,9 @@ class FeedViewModel: PhotoGridViewModel {
     }
 
     func loadRecentSearches() {
-        recentSearches = recentSearchesRepository.recentSearches()
+        let searches = recentSearchesRepository.recentSearches()
+        guard searches != recentSearches else { return }
+        recentSearches = searches
     }
 
     /// Saves the search and returns the query to open, or `nil` if the text is empty.
