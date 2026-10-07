@@ -7,27 +7,6 @@
 
 import SwiftUI
 
-struct SoftScrollEdges: ViewModifier {
-    let edges: Edge.Set
-    
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .scrollEdgeEffectStyle(.soft, for: edges)
-        } else {
-            content
-        }
-    }
-}
-
-extension View {
-    @ViewBuilder
-    func softScrollEdges(_ edges: Edge.Set) -> some View {
-        self
-            .modifier(SoftScrollEdges(edges: edges))
-    }
-}
-
 struct GalleryView: View {
     private let column = GridItem(.adaptive(minimum: 100), spacing: 2)
     
