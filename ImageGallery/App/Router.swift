@@ -10,10 +10,22 @@ import Combine
 
 final class Router: ObservableObject {
     @Published var path = NavigationPath()
-    @Published var selectedPhoto: Photo?
-    
+    @Published var presentedPhoto: PhotoPresentation?
+
     func navigate(to route: Route) {
         path.append(route)
+    }
+
+    func showPhoto(_ photo: Photo, from sourceFrame: CGRect) {
+        withoutAnimation {
+            presentedPhoto = PhotoPresentation(photo: photo, sourceFrame: sourceFrame)
+        }
+    }
+
+    func dismissPhoto() {
+        withoutAnimation {
+            presentedPhoto = nil
+        }
     }
     
     func pop() {

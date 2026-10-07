@@ -10,7 +10,6 @@ import Combine
 
 class SearchViewModel: PhotoGridViewModel {
     @Published var query = ""
-    @Published var selectedPhoto: Photo?
     private let repository: PhotosRepository
     private var cancellables = Set<AnyCancellable>()
     

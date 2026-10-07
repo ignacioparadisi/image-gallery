@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FeedView: View {
-    @Environment(\.router) private var router
+    @EnvironmentObject private var router: Router
     @StateObject private var viewModel: FeedViewModel
     @State private var dismissSearchTrigger: Bool = false
     
@@ -19,6 +19,7 @@ struct FeedView: View {
     var body: some View {
         Content(viewModel: viewModel, dismissSearchTrigger: dismissSearchTrigger)
             .navigationTitle("Feed")
+            .softScrollEdges(.top)
             .searchable(text: $viewModel.query)
             .searchSuggestions {
                 Text("No Recent Searches")
@@ -38,21 +39,17 @@ struct FeedView: View {
     }
     
     struct Content: View {
-        @Environment(\.router) private var router
+        @EnvironmentObject private var router: Router
         @Environment(\.dismissSearch) private var dismissSearch
         @ObservedObject var viewModel: FeedViewModel
         let dismissSearchTrigger: Bool
-        
-        var photoBinding: Binding<Photo?> {
-            Binding {
-                router.selectedPhoto
-            } set: {
-                router.selectedPhoto = $0
-            }
-        }
-        
+
         var body: some View {
-            PhotoGridView(photos: viewModel.photos, selection: photoBinding) {
+            PhotoGridView(
+                photos: viewModel.photos,
+                hiddenPhotoID: router.presentedPhoto?.id,
+                onSelect: router.showPhoto
+            ) {
                 viewModel.loadNextPageIfNeeded(currentPhoto: $0)
             }
             .onChange(of: dismissSearchTrigger) { _ in

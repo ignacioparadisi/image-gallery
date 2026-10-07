@@ -8,23 +8,19 @@
 import SwiftUI
 
 struct SearchView: View {
-    @Environment(\.router) private var router
+    @EnvironmentObject private var router: Router
     @StateObject private var viewModel: SearchViewModel
-    
+
     init(viewModel: SearchViewModel) {
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
-    
-    var photoBinding: Binding<Photo?> {
-        Binding {
-            router.selectedPhoto
-        } set: {
-            router.selectedPhoto = $0
-        }
-    }
-    
+
     var body: some View {
-        PhotoGridView(photos: viewModel.photos, selection: photoBinding) {
+        PhotoGridView(
+            photos: viewModel.photos,
+            hiddenPhotoID: router.presentedPhoto?.id,
+            onSelect: router.showPhoto
+        ) {
             viewModel.loadNextPageIfNeeded(currentPhoto: $0)
         }
         .navigationTitle(viewModel.query)

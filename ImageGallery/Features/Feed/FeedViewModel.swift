@@ -10,7 +10,6 @@ import Combine
 
 class FeedViewModel: PhotoGridViewModel {
     @Published var query = ""
-    @Published var selectedPhoto: Photo?
     private let repository: PhotosRepository
     
     init(repository: PhotosRepository) {
