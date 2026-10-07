@@ -17,7 +17,7 @@ struct PhotoGridView: View {
         ScrollView {
             LazyVGrid(columns: [column], spacing: 2) {
                 ForEach(viewModel.photos) { photo in
-                    PhotoGridCell(url: photo.thumbnailURL)
+                    PhotoGridCell(url: photo.thumbnailURL, description: photo.description)
                         .opacity(photo.id == hiddenPhotoID ? 0 : 1)
                         .overlay {
                             GeometryReader { proxy in

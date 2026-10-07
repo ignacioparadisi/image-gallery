@@ -30,12 +30,13 @@ struct PhotoDetailView: View {
             let frame = currentFrame(in: container)
 
             ZStack(alignment: .topLeading) {
-                Color.black
+                Rectangle()
+                    .fill(.background)
                     .opacity(isExpanded ? 1 - dragProgress * 0.3 : 0)
                     .onTapGesture(perform: dismiss)
                     .accessibilityAction(.escape, dismiss)
 
-                Content(photo: photo)
+                Content(photo: photo, isExpanded: isExpanded)
                     .frame(width: frame.width, height: frame.height)
                     .clipped()
                     .offset(x: frame.minX - container.minX, y: frame.minY - container.minY)
@@ -99,10 +100,23 @@ struct PhotoDetailView: View {
 extension PhotoDetailView {
     struct Content: View {
         let photo: Photo
+        let isExpanded: Bool
         
         var body: some View {
             RemoteImage(url: photo.url) {
                 RemoteImage(url: photo.thumbnailURL)
+            }
+            .overlay(alignment: .bottom) {
+                if let description = photo.description, isExpanded {
+                    Text(description)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .padding(.top, 20)
+                        .background {
+                            LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .top, endPoint: .bottom)
+                        }
+                }
             }
             .accessibilityLabel(photo.description ?? "Photo")
         }
