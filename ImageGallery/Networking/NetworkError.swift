@@ -20,21 +20,21 @@ enum NetworkError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            "The URL is not valid"
+            Localization.Network.invalidURL
         case .invalidResponse:
-            "The response is not valid"
+            Localization.Network.invalidResponse
         case .unauthorized:
-            "Unauthorized"
+            Localization.Network.unauthorized
         case .rateLimited:
-            "You've reached the request limit rate for this hour"
+            Localization.Network.rateLimited
         case .httpError(let code):
-            "Network error with code \(code)"
+            Localization.Network.httpError(statusCode: code)
         case .decodingFailed:
-            "There was an error reading the response"
+            Localization.Network.decodingFailed
         case .offline:
-            "You're offline"
+            Localization.Network.offline
         case .connectionFailed:
-            "Couldn't connect to Unsplash"
+            Localization.Network.connectionFailed
         }
     }
 }

@@ -118,7 +118,7 @@ extension PhotoDetailView {
                         }
                 }
             }
-            .accessibilityLabel(photo.description ?? "Photo")
+            .accessibilityLabel(photo.description ?? Localization.PhotoDetail.photoAccessibilityLabel)
         }
     }
 }
