@@ -8,16 +8,15 @@
 import SwiftUI
 
 struct PhotoGridView: View {
-    let photos: [Photo]
+    @ObservedObject var viewModel: PhotoGridViewModel
     var hiddenPhotoID: Photo.ID?
     let onSelect: (Photo, CGRect) -> Void
-    let onLoadMore: ((Photo) -> Void)
     private let column = GridItem(.adaptive(minimum: 130), spacing: 2)
 
     var body: some View {
         ScrollView {
             LazyVGrid(columns: [column], spacing: 2) {
-                ForEach(photos) { photo in
+                ForEach(viewModel.photos) { photo in
                     PhotoGridCell(url: photo.thumbnailURL)
                         .opacity(photo.id == hiddenPhotoID ? 0 : 1)
                         .overlay {
@@ -31,10 +30,51 @@ struct PhotoGridView: View {
                         }
                         .accessibilityAddTraits(.isButton)
                         .onAppear {
-                            onLoadMore(photo)
+                            viewModel.loadNextPageIfNeeded(currentPhoto: photo)
                         }
                 }
             }
+            
+            if viewModel.phaseStyle == .footer {
+                footer
+            }
+        }
+        .overlay {
+            if viewModel.phaseStyle == .fullScreen {
+                overlay
+            }
+        }
+        .animation(.default, value: viewModel.phase)
+    }
+    
+    @ViewBuilder
+    private var overlay: some View {
+        switch viewModel.phase {
+        case .empty:
+            Text("No Results")
+                .foregroundStyle(.secondary)
+        case .loading:
+            ProgressView()
+        case .failure(let error):
+            ErrorView(error: error) {
+                viewModel.retry()
+            }
+        default:
+            EmptyView()
+        }
+    }
+    
+    @ViewBuilder
+    private var footer: some View {
+        switch viewModel.phase {
+        case .loading:
+            ProgressView()
+        case .failure(let error):
+            ShortErrorView(error: error) {
+                viewModel.retry()
+            }
+        default:
+            EmptyView()
         }
     }
 }

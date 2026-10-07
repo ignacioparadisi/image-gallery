@@ -27,7 +27,7 @@ import SwiftUI
                 .environment(\.imageLoader, dependencies.imageLoader)
                 .environmentObject(router)
             case .failure(let error):
-                ConfigurationErrorView(error: error)
+                ErrorView(error: error)
             }
             
         }

@@ -17,12 +17,10 @@ struct SearchView: View {
 
     var body: some View {
         PhotoGridView(
-            photos: viewModel.photos,
+            viewModel: viewModel,
             hiddenPhotoID: router.presentedPhoto?.id,
             onSelect: router.showPhoto
-        ) {
-            viewModel.loadNextPageIfNeeded(currentPhoto: $0)
-        }
+        )
         .navigationTitle(viewModel.query)
         .navigationBarTitleDisplayMode(.inline)
         .softScrollEdges(.top)

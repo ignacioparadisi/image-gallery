@@ -9,22 +9,31 @@ import SwiftUI
 import Combine
 
 class PhotoGridViewModel: ObservableObject {
+    enum PhaseStyle {
+        case fullScreen
+        case footer
+    }
     enum Phase: Equatable {
         case idle
         case loading
-        case failure
+        case failure(NetworkError)
+        case empty
         case finished
     }
     
     @Published private(set) var photos: [Photo] = []
     @Published private(set) var phase: Phase = .idle
-    @Published var error: NetworkError?
+    @Published private(set) var phaseStyle: PhaseStyle = .fullScreen
     
     private let prefetchCount = 10
     private var nextPage: Int = 1
     private var seenIDs = Set<Photo.ID>()
     private var task: Task<Void, Never>?
     let pageSize: Int = 30
+    
+    var isLoading: Bool {
+        phase == .loading && photos.isEmpty
+    }
     
     func cleanSearch() {
         photos.removeAll()
@@ -33,6 +42,7 @@ class PhotoGridViewModel: ObservableObject {
     func loadFirstPageIfNeeded() {
         guard photos.isEmpty, phase == .idle else { return }
         phase = .loading
+        phaseStyle = photos.isEmpty ? .fullScreen : .footer
         task = Task { await fetchNextPage() }
     }
     
@@ -41,6 +51,13 @@ class PhotoGridViewModel: ObservableObject {
               photos.suffix(prefetchCount).contains(where: { $0.id == photo.id }) else {
             return
         }
+        phase = .loading
+        phaseStyle = photos.isEmpty ? .fullScreen : .footer
+        task = Task { await fetchNextPage() }
+    }
+    
+    func retry() {
+        guard case .failure = phase else { return }
         phase = .loading
         task = Task { await fetchNextPage() }
     }
@@ -55,12 +72,19 @@ class PhotoGridViewModel: ObservableObject {
             try Task.checkCancellation()
             photos += page.results.filter { seenIDs.insert($0.id).inserted }
             nextPage += 1
-            phase = photos.count < page.total ? .idle : .finished
-        } catch is NetworkError {
-            phase = .idle
-            self.error = error
+            phaseStyle = photos.isEmpty ? .fullScreen : .footer
+            if photos.isEmpty {
+                phase = .empty
+            } else {
+                phase = photos.count < page.total ? .idle : .finished
+            }
         } catch {
-            phase = Task.isCancelled ? .idle : .failure
+            if let error = error as? NetworkError {
+                phaseStyle = photos.isEmpty ? .fullScreen : .footer
+                phase = .failure(error)
+            } else {
+                phase = Task.isCancelled ? .idle : .failure(.invalidResponse)
+            }
         }
     }
     
