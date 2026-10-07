@@ -2,8 +2,6 @@
 
 A SwiftUI app that shows the [Unsplash](https://unsplash.com) feed in a grid, lets you search for photos, and opens each one full screen with a custom transition. My main goal was keeping it smooth while scrolling through hundreds of images.
 
-<!-- TODO: add 2–3 screenshots or a short GIF (feed, search with recent searches, photo detail) -->
-
 ## Features
 
 - Infinite feed (`GET /photos`)
@@ -38,15 +36,15 @@ I went with MVVM and split the code into layers, where each one only knows about
 - `Feature` knows about `Domain`, plus `NetworkError` (to show the right error message) and the image loader from `Networking`
 - `Data` knows about `Domain` and `Networking`
 
-| Folder           | What's in it                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------ |
-| `App`            | App entry point, `AppDependencies`, `Router` and configuration                                   |
-| `Domain`         | `Photo`, `Page`, `RecentSearch`, the LRU logic (`RecentSearches`), repository protocols          |
-| `Data`           | `PhotosRepositoryImpl`, `UserDefaultsRecentSearchesRepository`, DTO mapping                      |
+| Folder           | What's in it                                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `App`            | App entry point, `AppDependencies`, `Router` and configuration                                                   |
+| `Domain`         | `Photo`, `Page`, `RecentSearch`, the LRU logic (`RecentSearches`), repository protocols                          |
+| `Data`           | `PhotosRepositoryImpl`, `UserDefaultsRecentSearchesRepository`, DTO mapping                                      |
 | `Networking`     | `HTTPClient`, `HTTPSession`, `NetworkError`, `ImageLoader`, and the Unsplash endpoints and DTOs in `UnsplashAPI` |
-| `Features`       | Feed, Search, PhotoGrid, PhotoDetail                                                    |
-| `SharedUI`       | Reusable views and helpers (`RemoteImage`, `ErrorView`, `BackButton`…)                  |
-| `PreviewContent` | Sample data for SwiftUI previews (debug only)                                           |
+| `Features`       | Feed, Search, PhotoGrid, PhotoDetail                                                                             |
+| `SharedUI`       | Reusable views and helpers (`RemoteImage`, `ErrorView`, `BackButton`…)                                           |
+| `PreviewContent` | Sample data for SwiftUI previews (debug only)                                                                    |
 
 ## Technical choices
 

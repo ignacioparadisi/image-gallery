@@ -39,7 +39,7 @@ struct RemoteImage<Placeholder>: View where Placeholder: View {
                     placeholder()
                 }
             }
-            .task {
+            .task(id: url) {
                 let loadedImage = try? await imageLoader.image(url: url)
                 withAnimation(.smooth(duration: 0.1)) {
                     image = loadedImage
