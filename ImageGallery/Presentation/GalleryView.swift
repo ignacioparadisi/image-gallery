@@ -7,6 +7,27 @@
 
 import SwiftUI
 
+struct SoftScrollEdges: ViewModifier {
+    let edges: Edge.Set
+    
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .scrollEdgeEffectStyle(.soft, for: edges)
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func softScrollEdges(_ edges: Edge.Set) -> some View {
+        self
+            .modifier(SoftScrollEdges(edges: edges))
+    }
+}
+
 struct GalleryView: View {
     private let column = GridItem(.adaptive(minimum: 100), spacing: 2)
     
@@ -19,34 +40,13 @@ struct GalleryView: View {
     var body: some View {
         NavigationStack {
             GalleryContentView(viewModel: viewModel)
+                .softScrollEdges([.top])
                 .searchable(text: $viewModel.query, prompt: "Search photos")
+                .navigationTitle("Feed")
+                .toolbarBackground(.visible, for: .navigationBar)
         }
         .onAppear {
             viewModel.fetchFeed()
         }
-    }
-}
-
-struct GalleryContentView: View {
-    @ObservedObject var viewModel: GalleryViewModel
-    
-    private var isSearching: Bool {
-        if viewModel.searchViewModel == nil {
-            return false
-        }
-        return true
-    }
-    
-    var body: some View {
-        ZStack {
-            PhotoGridView(viewModel: viewModel.feedViewModel)
-                .opacity(isSearching ? 0 : 1)
-            
-            if let searchViewModel = viewModel.searchViewModel {
-                PhotoGridView(viewModel: searchViewModel)
-                    .transition(.move(edge: .bottom))
-            }
-        }
-        .animation(.default, value: viewModel.searchViewModel == nil)
     }
 }

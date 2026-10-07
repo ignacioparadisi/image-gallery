@@ -29,6 +29,7 @@ class GalleryViewModel: ObservableObject {
     @Published var query = ""
 //    @Published private(set) var content: Content = .feed
     
+    private let pageSize: Int = 30
     private let repository: PhotosRepository
     let feedViewModel: PhotoGridViewModel
     @Published private(set) var searchViewModel: PhotoGridViewModel?
@@ -38,7 +39,7 @@ class GalleryViewModel: ObservableObject {
     
     init(repository: PhotosRepository) {
         self.repository = repository
-        self.feedViewModel = PhotoGridViewModel(dataSource: FeedGridDataSource(repository: self.repository))
+        self.feedViewModel = PhotoGridViewModel(dataSource: FeedGridDataSource(pageSize: pageSize, repository: self.repository))
         
         self.$query
             .dropFirst()
@@ -56,7 +57,13 @@ class GalleryViewModel: ObservableObject {
             return
         }
         
-        searchViewModel = PhotoGridViewModel(dataSource: SearchGridDataSource(repository: repository, query: trimmedQuery))
+        searchViewModel = PhotoGridViewModel(
+            dataSource: SearchGridDataSource(
+                pageSize: pageSize,
+                query: trimmedQuery,
+                repository: repository
+            )
+        )
         searchViewModel?.loadFirstPageIfNeeded()
     }
     

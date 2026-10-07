@@ -9,7 +9,7 @@ import Foundation
 
 #if DEBUG
 struct PreviewPhotosRepository: PhotosRepository {
-    func fetchPhotos(page: Int) async throws -> Page<Photo> {
+    func fetchPhotos(page: Int, pageSize: Int) async throws -> Page<Photo> {
         return Page(
             total: 0,
             totalPages: 0,
@@ -17,7 +17,7 @@ struct PreviewPhotosRepository: PhotosRepository {
         )
     }
     
-    func searchPhotos(text: String, page: Int) async throws -> Page<Photo> {
+    func searchPhotos(text: String, page: Int, pageSize: Int) async throws -> Page<Photo> {
         let page = PageDTO(total: 20, totalPages: 20, results: PhotoDTO.previews)
         return Page(
             total: page.total,

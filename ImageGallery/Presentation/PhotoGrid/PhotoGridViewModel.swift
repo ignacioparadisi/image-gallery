@@ -13,11 +13,12 @@ final class PhotoGridViewModel: ObservableObject {
         case idle
         case loading
         case failure
-        case success
+        case finished
     }
     
     @Published private(set) var photos: [Photo] = []
-    @Published private(set) var phase: Phase = .success
+    @Published private(set) var phase: Phase = .idle
+    @Published var error: NetworkError?
     
     private let dataSource: PhotoGridDataSource
     private let prefetchCount = 10
@@ -30,13 +31,13 @@ final class PhotoGridViewModel: ObservableObject {
     }
     
     func loadFirstPageIfNeeded() {
-        guard photos.isEmpty, phase == .success else { return }
+        guard photos.isEmpty, phase == .idle else { return }
         phase = .loading
         task = Task { await fetchNextPage() }
     }
     
     func loadNextPageIfNeeded(currentPhoto photo: Photo) {
-        guard phase == .success,
+        guard phase == .idle,
               photos.suffix(prefetchCount).contains(where: { $0.id == photo.id }) else {
             return
         }
@@ -50,7 +51,10 @@ final class PhotoGridViewModel: ObservableObject {
             try Task.checkCancellation()
             photos += page.results.filter { seenIDs.insert($0.id).inserted }
             nextPage += 1
-            phase = .success
+            phase = photos.count < page.total ? .idle : .finished
+        } catch is NetworkError {
+            phase = .idle
+            self.error = error
         } catch {
             phase = Task.isCancelled ? .idle : .failure
         }

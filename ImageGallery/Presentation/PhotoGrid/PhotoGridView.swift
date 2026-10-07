@@ -24,5 +24,13 @@ struct PhotoGridView: View {
                 }
             }
         }
+        .alert(error: $viewModel.error) {
+            Button("Cancel") {
+                
+            }
+            Button("Retry") {
+                
+            }
+        }
     }
 }
