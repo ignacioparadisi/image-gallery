@@ -98,6 +98,7 @@ A few details:
 - `ImageLoader` is an actor because the cache and the list of downloads in progress are shared by every cell.
 - The memory cache can also be read synchronously, outside the actor. `NSCache` is thread-safe, and it means scrolling back to images you've already seen shows them right away instead of flashing a placeholder.
 - Failed downloads aren't cached, so a cell tries again the next time it appears.
+- The memory cache is limited by how much memory the decoded images use, not by how many there are.
 
 ### Navigation
 
@@ -189,7 +190,7 @@ With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and se
 
 ## What I'd improve with more time
 
-- Prefetch images for photos just below the screen, cancel downloads no cell needs anymore, and limit the memory cache by size instead of number of images.
+- Prefetch images for photos just below the screen, and cancel downloads no cell needs anymore.
 - Save the last loaded feed pages in CoreData so the app works offline.
 - Show an alert when the hourly rate limit is reached, and use `X-Ratelimit-Remaining` to warn before it happens.
 - Use each photo's BlurHash or dominant color as a placeholder while it loads.

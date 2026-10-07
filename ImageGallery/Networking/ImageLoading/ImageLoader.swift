@@ -15,11 +15,17 @@ actor ImageLoader: ImageLoading {
     nonisolated(unsafe) private let cache = NSCache<NSURL, CGImage>()
     private var loadingTasks: [URL: Task<CGImage, Error>] = [:]
     
-    init(session: HTTPSession, countLimit: Int = 200) {
+    nonisolated static let defaultCostLimit = min(Int(ProcessInfo.processInfo.physicalMemory / 10), 150 * 1024 * 1024)
+
+    init(session: HTTPSession, costLimit: Int = ImageLoader.defaultCostLimit) {
         self.session = session
-        self.cache.countLimit = countLimit
+        self.cache.totalCostLimit = costLimit
     }
-    
+
+    nonisolated static func cost(of image: CGImage) -> Int {
+        image.bytesPerRow * image.height
+    }
+
     nonisolated func cachedImage(url: URL?) -> CGImage? {
         guard let url else { return nil }
         return cache.object(forKey: url as NSURL)
@@ -43,7 +49,7 @@ actor ImageLoader: ImageLoading {
         defer { loadingTasks[url] = nil }
         
         let image = try await task.value
-        cache.setObject(image, forKey: url as NSURL)
+        cache.setObject(image, forKey: url as NSURL, cost: Self.cost(of: image))
         logger.debug("Did fetch image from network: \(url.lastPathComponent)")
         return image
     }
