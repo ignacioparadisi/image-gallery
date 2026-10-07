@@ -38,12 +38,21 @@ struct FeedView: View {
     }
     
     struct Content: View {
+        @Environment(\.router) private var router
         @Environment(\.dismissSearch) private var dismissSearch
         @ObservedObject var viewModel: FeedViewModel
         let dismissSearchTrigger: Bool
         
+        var photoBinding: Binding<Photo?> {
+            Binding {
+                router.selectedPhoto
+            } set: {
+                router.selectedPhoto = $0
+            }
+        }
+        
         var body: some View {
-            PhotoGridView(photos: viewModel.photos, selection: $viewModel.selectedPhoto) {
+            PhotoGridView(photos: viewModel.photos, selection: photoBinding) {
                 viewModel.loadNextPageIfNeeded(currentPhoto: $0)
             }
             .onChange(of: dismissSearchTrigger) { _ in

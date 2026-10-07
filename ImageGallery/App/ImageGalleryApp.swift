@@ -10,6 +10,14 @@ import SwiftUI
         }
     }
     
+    var photoBinding: Binding<Photo?> {
+        Binding {
+            router.selectedPhoto
+        } set: {
+            router.selectedPhoto = $0
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             switch appDependencies {
@@ -21,6 +29,12 @@ import SwiftUI
                             case .search(let query):
                                 SearchView(viewModel: SearchViewModel(query: query, repository: dependencies.photosRepository))
                             }
+                        }
+                        .fullScreenCover(item: photoBinding) { photo in
+                            PhotoDetailView(photo: photo)
+                        }
+                        .transaction { transaction in
+                            transaction.disablesAnimations = true
                         }
                 }
                 .environment(\.imageLoader, dependencies.imageLoader)

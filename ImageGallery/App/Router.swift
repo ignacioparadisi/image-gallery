@@ -10,6 +10,7 @@ import Combine
 
 final class Router: ObservableObject {
     @Published var path = NavigationPath()
+    @Published var selectedPhoto: Photo?
     
     func navigate(to route: Route) {
         path.append(route)

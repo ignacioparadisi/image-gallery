@@ -15,8 +15,16 @@ struct SearchView: View {
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
     
+    var photoBinding: Binding<Photo?> {
+        Binding {
+            router.selectedPhoto
+        } set: {
+            router.selectedPhoto = $0
+        }
+    }
+    
     var body: some View {
-        PhotoGridView(photos: viewModel.photos, selection: $viewModel.selectedPhoto) {
+        PhotoGridView(photos: viewModel.photos, selection: photoBinding) {
             viewModel.loadNextPageIfNeeded(currentPhoto: $0)
         }
         .navigationTitle(viewModel.query)

@@ -18,6 +18,9 @@ struct PhotoGridView: View {
             LazyVGrid(columns: [column], spacing: 2) {
                 ForEach(photos) { photo in
                     PhotoGridCell(url: photo.thumbnailURL)
+                        .onTapGesture {
+                            selection = photo
+                        }
                         .onAppear {
                             onLoadMore(photo)
                         }
