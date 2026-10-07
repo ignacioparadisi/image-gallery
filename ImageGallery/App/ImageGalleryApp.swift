@@ -26,8 +26,8 @@ import SwiftUI
                 .photoDetail(router.presentedPhoto, onDismissed: router.dismissPhoto)
                 .environment(\.imageLoader, dependencies.imageLoader)
                 .environmentObject(router)
-            case .failure(let failure):
-                Text("There was an error")
+            case .failure(let error):
+                ConfigurationErrorView(error: error)
             }
             
         }

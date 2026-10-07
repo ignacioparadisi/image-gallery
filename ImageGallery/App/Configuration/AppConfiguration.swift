@@ -14,8 +14,16 @@ struct AppConfiguration {
 
 /// Init is placed in an extension so the struct doesn't lose the default init
 extension AppConfiguration {
-    enum Error: Swift.Error {
+    enum Error: LocalizedError {
         case missingKey(String)
+        
+        var errorDescription: String? {
+            "Missing Unsplash access key"
+        }
+
+        var recoverySuggestion: String? {
+            "Copy Template.xcconfig to Environment.xcconfig in App/Configuration, set UNSPLASH_ACCESS_KEY to your key, and run the app again."
+        }
     }
     
     init(bundle: Bundle = .main) throws {
