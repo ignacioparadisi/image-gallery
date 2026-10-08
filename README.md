@@ -42,7 +42,7 @@ I went with MVVM and split the code into layers, where each one only knows about
 | `Domain`         | `Photo`, `Page`, `RecentSearch`, the LRU logic (`RecentSearches`), repository protocols                          |
 | `Data`           | `PhotosRepositoryImpl`, `UserDefaultsRecentSearchesRepository`, DTO mapping                                      |
 | `Networking`     | `HTTPClient`, `HTTPSession`, `NetworkError`, `ImageLoader`, and the Unsplash endpoints and DTOs in `UnsplashAPI` |
-| `Features`       | Feed, Search, PhotoGrid, PhotoDetail                                                                             |
+| `Features`       | Feed, Search, PhotoGrid, PhotoDetail, SearchSuggestions                                                          |
 | `SharedUI`       | Reusable views and helpers (`RemoteImage`, `ErrorView`, `BackButton`…)                                           |
 | `PreviewContent` | Sample data for SwiftUI previews (debug only)                                                                    |
 
@@ -108,9 +108,13 @@ The detail is a `fullScreenCover` shown without animation. Inside it, the photo 
 
 ### Search and recent searches
 
-You search from the feed. When you submit, the results open in a new screen titled with what you searched for. I search on submit instead of while typing because of the 50-requests-per-hour limit. Even with a debounce you could have unnecessary requests.
+You can search from the feed and from the search results. From the feed, the results open in a new screen titled with what you searched for. From the results, a new search replaces them on the same screen, so refining a search doesn't stack screens, and Back always takes you to the feed where you left it. I search on submit instead of while typing because of the 50-requests-per-hour limit. Even with a debounce you could have unnecessary requests.
 
-Recent searches show up as suggestions in the search field. Each one is saved when you submit it, and it gets the first result's thumbnail the first time it returns results. I keep the last 10: searching for something again moves it to the top, and when there are more than 10, the one used least recently is dropped. Since it's just 10 short entries, I store them in `UserDefaults` behind a `RecentSearchesRepository` protocol.
+While you type, the suggestions show a "Search for..." row followed by the recent searches that contain the text, ignoring case and accents. Cancelling puts the field back to the search you're looking at, without changing the results.
+
+Recent searches are saved when you submit, and each one gets the first result's thumbnail the first time it returns results. I keep the last 10: searching for something again moves it to the top, and when there are more than 10, the one used least recently is dropped. Since it's just 10 short entries, I store them in `UserDefaults` behind a `RecentSearchesRepository` protocol.
+
+Both screens get the search field from the same `.searchWithSuggestions` modifier, and only say what submitting does. The suggestions have their own small ViewModel, so the list changing doesn't redraw the grid.
 
 ### Configuration
 
@@ -122,15 +126,7 @@ Images already downloaded stay in the disk cache and are used without asking the
 
 ### Tests
 
-I used Swift Testing, with mocks for the network session and the repositories. The tests cover:
-
-- the endpoints' URLs
-- the HTTP client: the authorization header, status codes, network and decoding errors
-- reading response headers
-- the memory cost of a cached image
-- the repositories, including pagination from headers and persisting recent searches
-- the recent searches rules (order, limit of 10, duplicates)
-- the ViewModels: pagination and recent searches
+I used Swift Testing, with mocks for the network session and the repositories.
 
 ## Performance
 
@@ -141,7 +137,6 @@ I used Swift Testing, with mocks for the network session and the repositories. T
 - Decoded images are cached in memory, files on disk, and the same image is never downloaded twice at the same time.
 - The next page is requested before you reach the end of the grid.
 - Grid cells only receive simple values (a URL and a description), so SwiftUI can skip cells whose data didn't change.
-- Typing in the search field doesn't redraw the grid. The search text lives in the view, not in the ViewModel the grid observes.
 - The grid is `Equatable` and ignores its tap closure, so it isn't redrawn just because the screen that contains it was.
 - A cell lets go of its image when it disappears, to use less memory while scrolling. When it appears again, the image comes back from the cache.
 

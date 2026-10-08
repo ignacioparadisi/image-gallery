@@ -11,7 +11,7 @@ struct PhotoGridView: View, Equatable {
     @ObservedObject var viewModel: PhotoGridViewModel
     var hiddenPhotoID: Photo.ID?
     let onSelect: (Photo, CGRect) -> Void
-    private let column = GridItem(.adaptive(minimum: 130), spacing: 2)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 2)
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.viewModel === rhs.viewModel && lhs.hiddenPhotoID == rhs.hiddenPhotoID
@@ -19,7 +19,7 @@ struct PhotoGridView: View, Equatable {
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: [column], spacing: 2) {
+            LazyVGrid(columns: columns, spacing: 2) {
                 ForEach(viewModel.photos) { photo in
                     PhotoGridCell(url: photo.thumbnailURL, description: photo.description)
                         .opacity(photo.id == hiddenPhotoID ? 0 : 1)
