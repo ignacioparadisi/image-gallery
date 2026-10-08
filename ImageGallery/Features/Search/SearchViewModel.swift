@@ -29,8 +29,7 @@ class SearchViewModel: PhotoGridViewModel {
     }
 
     func search(_ text: String) {
-        let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard query.isEmpty == false, query != self.query else { return }
+        guard let query = text.searchQuery, query != self.query else { return }
         recentSearchesRepository.record(query)
         self.query = query
         reload()

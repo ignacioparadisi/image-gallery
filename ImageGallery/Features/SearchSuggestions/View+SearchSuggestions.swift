@@ -1,16 +1,21 @@
+//
+//  String+SearchQuery.swift
+//  ImageGallery
+//
+//  Created by Ignacio Paradisi on 10/7/26.
+//
+
 import SwiftUI
 
 extension View {
     /// Adds a search field that suggests recent searches.
     /// `submittedQuery` is the search the screen is showing. The field goes back to it when searching ends.
     func searchWithSuggestions(
-        text: Binding<String>,
         viewModel: SearchSuggestionsViewModel,
         submittedQuery: String? = nil,
         onSubmit: @escaping (String) -> Void
     ) -> some View {
         modifier(SearchWithSuggestionsModifier(
-            text: text,
             viewModel: viewModel,
             submittedQuery: submittedQuery,
             onSubmit: onSubmit
@@ -19,11 +24,18 @@ extension View {
 }
 
 private struct SearchWithSuggestionsModifier: ViewModifier {
-    @Binding var text: String
     let viewModel: SearchSuggestionsViewModel
     let submittedQuery: String?
     let onSubmit: (String) -> Void
+    @State private var text: String
     @State private var submitCount = 0
+
+    init(viewModel: SearchSuggestionsViewModel, submittedQuery: String?, onSubmit: @escaping (String) -> Void) {
+        self.viewModel = viewModel
+        self.submittedQuery = submittedQuery
+        self.onSubmit = onSubmit
+        self._text = State(initialValue: submittedQuery ?? "")
+    }
 
     func body(content: Content) -> some View {
         content

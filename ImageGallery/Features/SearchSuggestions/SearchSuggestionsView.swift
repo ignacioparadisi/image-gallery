@@ -1,3 +1,10 @@
+//
+//  String+SearchQuery.swift
+//  ImageGallery
+//
+//  Created by Ignacio Paradisi on 10/7/26.
+//
+
 import SwiftUI
 
 struct SearchSuggestionsView: View {

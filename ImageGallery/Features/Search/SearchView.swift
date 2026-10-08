@@ -11,12 +11,14 @@ struct SearchView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var viewModel: SearchViewModel
     @StateObject private var searchSuggestionsViewModel: SearchSuggestionsViewModel
-    @State private var query: String
 
-    init(viewModel: SearchViewModel, searchSuggestionsViewModel: SearchSuggestionsViewModel) {
-        self._viewModel = StateObject(wrappedValue: viewModel)
-        self._searchSuggestionsViewModel = StateObject(wrappedValue: searchSuggestionsViewModel)
-        self._query = State(initialValue: viewModel.query)
+    /// The view models are autoclosures so they're only created once, not every time the parent redraws.
+    init(
+        viewModel: @autoclosure @escaping () -> SearchViewModel,
+        searchSuggestionsViewModel: @autoclosure @escaping () -> SearchSuggestionsViewModel
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel())
+        self._searchSuggestionsViewModel = StateObject(wrappedValue: searchSuggestionsViewModel())
     }
 
     var body: some View {
@@ -30,7 +32,6 @@ struct SearchView: View {
         .navigationBarTitleDisplayMode(.inline)
         .softScrollEdges(.top)
         .searchWithSuggestions(
-            text: $query,
             viewModel: searchSuggestionsViewModel,
             submittedQuery: viewModel.query,
             onSubmit: viewModel.search

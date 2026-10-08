@@ -23,8 +23,7 @@ class FeedViewModel: PhotoGridViewModel {
 
     /// Saves the search and returns the query to open, or `nil` if the text is empty.
     func submitSearch(_ text: String) -> String? {
-        let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard query.isEmpty == false else { return nil }
+        guard let query = text.searchQuery else { return nil }
         recentSearchesRepository.record(query)
         return query
     }

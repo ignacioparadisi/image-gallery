@@ -11,18 +11,21 @@ struct FeedView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var viewModel: FeedViewModel
     @StateObject private var searchSuggestionsViewModel: SearchSuggestionsViewModel
-    @State private var query = ""
 
-    init(viewModel: FeedViewModel, searchSuggestionsViewModel: SearchSuggestionsViewModel) {
-        self._viewModel = StateObject(wrappedValue: viewModel)
-        self._searchSuggestionsViewModel = StateObject(wrappedValue: searchSuggestionsViewModel)
+    /// The view models are autoclosures so they're only created once, not every time the parent redraws.
+    init(
+        viewModel: @autoclosure @escaping () -> FeedViewModel,
+        searchSuggestionsViewModel: @autoclosure @escaping () -> SearchSuggestionsViewModel
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel())
+        self._searchSuggestionsViewModel = StateObject(wrappedValue: searchSuggestionsViewModel())
     }
 
     var body: some View {
         Content(viewModel: viewModel)
             .navigationTitle(Localization.Feed.title)
             .softScrollEdges(.top)
-            .searchWithSuggestions(text: $query, viewModel: searchSuggestionsViewModel, onSubmit: openSearch)
+            .searchWithSuggestions(viewModel: searchSuggestionsViewModel, onSubmit: openSearch)
             .onAppear {
                 viewModel.loadFirstPageIfNeeded()
             }

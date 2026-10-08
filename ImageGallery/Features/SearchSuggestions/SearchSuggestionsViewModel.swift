@@ -1,3 +1,10 @@
+//
+//  String+SearchQuery.swift
+//  ImageGallery
+//
+//  Created by Ignacio Paradisi on 10/7/26.
+//
+
 import Foundation
 import Combine
 
@@ -30,8 +37,7 @@ class SearchSuggestionsViewModel: ObservableObject {
     }
 
     func suggestions(for text: String) -> [Suggestion] {
-        let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard query.isEmpty == false else {
+        guard let query = text.searchQuery else {
             return recentSearches.map(Suggestion.recent)
         }
         let matches = recentSearches.filter { $0.query.localizedStandardContains(query) }
