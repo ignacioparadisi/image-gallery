@@ -1,5 +1,5 @@
 //
-//  Localizable.swift
+//  Localization.swift
 //  ImageGallery
 //
 //  Created by Ignacio Paradisi on 10/7/26.

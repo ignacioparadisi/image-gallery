@@ -1,5 +1,5 @@
 //
-//  String+SearchQuery.swift
+//  SearchSuggestionsViewModel.swift
 //  ImageGallery
 //
 //  Created by Ignacio Paradisi on 10/7/26.

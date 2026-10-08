@@ -1,13 +1,13 @@
 import SwiftUI
 
 extension View {
-    /// Pressents the Photo Detail in full screen with no animation
+    /// Presents the Photo Detail in full screen with no animation
     func photoDetail(_ presentation: PhotoPresentation?, onDismissed: @escaping () -> Void) -> some View {
         modifier(PhotoDetailModifier(presentation: presentation, onDismissed: onDismissed))
     }
 }
 
-/// Pressents the Photo Detail in full screen with no animation
+/// Presents the Photo Detail in full screen with no animation
 private struct PhotoDetailModifier: ViewModifier {
     /// Photo to be presented
     let presentation: PhotoPresentation?

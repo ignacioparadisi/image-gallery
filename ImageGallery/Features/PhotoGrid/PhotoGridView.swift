@@ -1,5 +1,5 @@
 //
-//  GalleryGridView.swift
+//  PhotoGridView.swift
 //  ImageGallery
 //
 //  Created by Ignacio Paradisi on 10/6/26.

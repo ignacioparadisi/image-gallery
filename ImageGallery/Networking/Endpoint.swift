@@ -10,7 +10,7 @@ import Foundation
 nonisolated protocol Endpoint: Sendable {
     associatedtype Response: Decodable & Sendable
     
-    /// HTTP Method for the enpoint. `GET`,  `POST`, `PUT`, `DELETE`
+    /// HTTP Method for the endpoint. `GET`,  `POST`, `PUT`, `DELETE`
     var method: HTTPMethod { get }
     /// Scheme for the request. `HTTPS`,  `HTTP`
     var scheme: HTTPScheme { get }
