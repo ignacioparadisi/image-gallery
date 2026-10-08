@@ -50,6 +50,9 @@ private struct SearchWithSuggestionsModifier: ViewModifier {
                 SearchSuggestionsView(viewModel: viewModel, text: text == submittedQuery ? "" : text)
             }
             .onSubmit(of: .search) {
+                #if canImport(UIKit)
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                #endif
                 onSubmit(text)
                 submitCount += 1
             }
