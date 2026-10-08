@@ -2,6 +2,8 @@
 
 A SwiftUI app that shows the [Unsplash](https://unsplash.com) feed in a grid, lets you search for photos, and opens each one full screen with a custom transition. My main goal was keeping it smooth while scrolling through hundreds of images.
 
+A video showing the app and code can be found here: [Loom Video](https://www.loom.com/share/957638cd1080476198a0de039b6585d5)
+
 ## Features
 
 - Infinite feed (`GET /photos`)
@@ -147,28 +149,28 @@ Measured on iPhone 15 Pro Max (iOS 27.0.1), Release build, scrolling the feed th
 #### Allocations
 
 **Results**
-Scrolling the feed for 45 seconds, memory rose while the first images loaded and then stayed flat at about 160 MiB. About 130 MiB of that is decoded images kept in the memory cache (200 images, around 0.6 MiB each), and the cache keeps releasing older images as you scroll.
+Scrolling the feed for 30 seconds, memory rose while the first pages loaded and then levelled off just under 200 MiB. About 163 MiB of that is decoded images, held by the 150 MiB memory cache plus the images on screen. The cache released 228 images during the run, so memory stays bounded as you scroll.
 
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/allocations.png" alt="Allocations Instrument Results" />
 
 #### Time Profiler
 
 **Results**
-Image decoding and JSON parsing run on background threads; the main thread is mostly SwiftUI layout and rendering. The thermal state stayed nominal while scrolling.
+Over 31 seconds of scrolling, opening photos and searching, the main thread was mostly UIKit layout and Core Animation; the app's SwiftUI view updates took about 220 ms in total. Image downloads, decoding and JSON parsing ran on background threads. The thermal state stayed nominal. The only hang was the first time the keyboard opened, which is iOS loading the keyboard rather than the app's own work
 
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/time-profiler.png" alt="Time Profile Instrument Results" />
 
 #### Animation Hitches
 
 **Results**
-In a 34-second run that included scrolling, opening photos and searching, there were 5 hitches. Four were one or two frames (8–12 ms on a 120 Hz display). The longest, 67 ms, happened when the keyboard appeared for the first time after tapping the search field, which is iOS loading the keyboard rather than the app's own work.
+In a 32-second run that included scrolling, opening photos and searching, there were 5 hitches, each a single frame (8.34 ms on a 120 Hz display). There was one hang the first time the keyboard opened after tapping the search field. That's iOS loading the keyboard rather than the app's own work, and it only happens once per launch.
 
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/animation-hitches.png" alt="Animation Hitches Instrument Results" />
 
 #### SwiftUI
 
 **Results**
-With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and searching, only 3 updates from the app's own views took longer than usual, each about 0.5 ms. Most of the longer updates (111) were the lazy grid's layout while scrolling, under 3 ms each.
+Over 33 seconds of scrolling, opening photos and searching, the SwiftUI instrument flagged no long view body updates. The longer updates were layout: the lazy grid laying out cells while scrolling, and the Liquid Glass effect on the search bar and back button. The longest single update, 18.8 ms, was tapping a recent search, which saves it and pushes the results screen in one action. It happens once per tap, not while scrolling.
 
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/swiftui-instrument-1.png" alt="SwiftUI Instrument Results 1" />
 <img src="https://raw.githubusercontent.com/ignacioparadisi/image-gallery/refs/heads/main/images/swiftui-instrument-2.png" alt="SwiftUI Instrument Results 2" />
@@ -180,7 +182,6 @@ With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and se
 - **`UserDefaults` for recent searches.** Simple and plenty for 10 entries. If I needed a long history, or to sync it, I'd use CoreData (SwiftData is simpler but it's not supported in iOS 16).
 - **Saving thumbnail URLs instead of images.** Keeps storage tiny and reuses the image cache, but if the cache is cleared, thumbnails have to download again.
 - **Searching on submit.** Saves requests with the hourly limit, but you don't see results as you type.
-- **The access key ships inside the app.** Like any client-side key, it can be extracted. A real app would send requests through its own backend.
 - **`nonisolated` on Networking.** The app target is main-actor isolated by default, so networking types opt out one by one. Moving networking into its own Swift package would avoid that.
 
 ## What I'd improve with more time
@@ -190,7 +191,7 @@ With the SwiftUI instrument, over 40 seconds of scrolling, opening photos and se
 - Show an alert when the hourly rate limit is reached, and use `X-Ratelimit-Remaining` to warn before it happens.
 - Use each photo's BlurHash or dominant color as a placeholder while it loads.
 - Interactive drag-to-dismiss, pinch to zoom, and handling rotation in the photo detail.
-- Move to `@Observable`, `scrollPosition` and animation completion handlers if the minimum version went up to iOS 17.
+- Move to `@Observable` and animation completion handlers if the minimum version went up to iOS 17.
 - Move networking into a local Swift package.
 - More tests: how `ImageLoader` shares downloads, DTO mapping, and UI tests for the main flows.
 - Pull to refresh on the feed.
