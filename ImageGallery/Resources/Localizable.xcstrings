@@ -56,17 +56,6 @@
         }
       }
     },
-    "Localization.Feed.noRecentSearches" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "No Recent Searches"
-          }
-        }
-      }
-    },
     "Localization.Feed.title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -195,6 +184,28 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "The image has no description"
+          }
+        }
+      }
+    },
+    "Localization.SearchSuggestions.noRecentSearches" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No Recent Searches"
+          }
+        }
+      }
+    },
+    "Localization.SearchSuggestions.searchFor" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Search for \"%@\""
           }
         }
       }

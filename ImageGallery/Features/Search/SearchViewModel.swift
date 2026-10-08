@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 class SearchViewModel: PhotoGridViewModel {
-    @Published var query = ""
+    @Published private(set) var query: String
     private let repository: PhotosRepository
     private let recentSearchesRepository: RecentSearchesRepository
 
@@ -20,10 +20,19 @@ class SearchViewModel: PhotoGridViewModel {
     }
 
     override func loadPage(_ page: Int, pageSize: Int) async throws -> Page<Photo> {
+        let query = query
         let result = try await repository.searchPhotos(text: query, page: page, pageSize: pageSize)
         if page == 1, let thumbnailURL = result.results.first?.thumbnailURL {
             recentSearchesRepository.setThumbnailIfNeeded(thumbnailURL, for: query)
         }
         return result
+    }
+
+    func search(_ text: String) {
+        let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard query.isEmpty == false, query != self.query else { return }
+        recentSearchesRepository.record(query)
+        self.query = query
+        reload()
     }
 }

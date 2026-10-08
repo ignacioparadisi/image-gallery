@@ -10,46 +10,21 @@ import SwiftUI
 struct FeedView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var viewModel: FeedViewModel
+    @StateObject private var searchSuggestionsViewModel: SearchSuggestionsViewModel
     @State private var query = ""
-    /// Used to dismissing the search after the search is done.
-    @State private var dismissSearchTrigger: Bool = false
-    
-    init(viewModel: FeedViewModel) {
+
+    init(viewModel: FeedViewModel, searchSuggestionsViewModel: SearchSuggestionsViewModel) {
         self._viewModel = StateObject(wrappedValue: viewModel)
+        self._searchSuggestionsViewModel = StateObject(wrappedValue: searchSuggestionsViewModel)
     }
-    
+
     var body: some View {
         Content(viewModel: viewModel)
-            .background(DismissSearchOnChange(trigger: dismissSearchTrigger))
             .navigationTitle(Localization.Feed.title)
             .softScrollEdges(.top)
-            .searchable(text: $query)
-            .searchSuggestions {
-                if viewModel.recentSearches.isEmpty {
-                    Text(Localization.Feed.noRecentSearches)
-                        .frame(maxWidth: .infinity)
-                        .foregroundStyle(.secondary)
-                        .listRowSeparator(.hidden, edges: .all)
-                } else {
-                    ForEach(viewModel.recentSearches) { search in
-                        Button {
-                            openSearch(search.query)
-                        } label: {
-                            RecentSearchRow(search: search)
-                        }
-                        .foregroundStyle(.primary)
-                    }
-                }
-            }
-            .onSubmit(of: .search) {
-                openSearch(query)
-            }
+            .searchWithSuggestions(text: $query, viewModel: searchSuggestionsViewModel, onSubmit: openSearch)
             .onAppear {
                 viewModel.loadFirstPageIfNeeded()
-                viewModel.loadRecentSearches()
-            }
-            .onDisappear {
-                dismissSearchTrigger.toggle()
             }
     }
 
@@ -70,17 +45,5 @@ struct FeedView: View {
             )
             .equatable()
         }
-    }
-}
-
-private struct DismissSearchOnChange: View {
-    @Environment(\.dismissSearch) private var dismissSearch
-    let trigger: Bool
-
-    var body: some View {
-        Color.clear
-            .onChange(of: trigger) { _ in
-                dismissSearch()
-            }
     }
 }

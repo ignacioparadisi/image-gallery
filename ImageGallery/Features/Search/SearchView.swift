@@ -10,9 +10,13 @@ import SwiftUI
 struct SearchView: View {
     @EnvironmentObject private var router: Router
     @StateObject private var viewModel: SearchViewModel
+    @StateObject private var searchSuggestionsViewModel: SearchSuggestionsViewModel
+    @State private var query: String
 
-    init(viewModel: SearchViewModel) {
+    init(viewModel: SearchViewModel, searchSuggestionsViewModel: SearchSuggestionsViewModel) {
         self._viewModel = StateObject(wrappedValue: viewModel)
+        self._searchSuggestionsViewModel = StateObject(wrappedValue: searchSuggestionsViewModel)
+        self._query = State(initialValue: viewModel.query)
     }
 
     var body: some View {
@@ -25,9 +29,14 @@ struct SearchView: View {
         .navigationTitle(viewModel.query)
         .navigationBarTitleDisplayMode(.inline)
         .softScrollEdges(.top)
+        .searchWithSuggestions(
+            text: $query,
+            viewModel: searchSuggestionsViewModel,
+            submittedQuery: viewModel.query,
+            onSubmit: viewModel.search
+        )
         .onAppear {
             viewModel.loadFirstPageIfNeeded()
         }
     }
 }
-

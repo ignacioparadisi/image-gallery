@@ -19,6 +19,9 @@ import SwiftUI
                         viewModel: FeedViewModel(
                             repository: dependencies.photosRepository,
                             recentSearchesRepository: dependencies.recentSearchesRepository
+                        ),
+                        searchSuggestionsViewModel: SearchSuggestionsViewModel(
+                            repository: dependencies.recentSearchesRepository
                         )
                     )
                     .navigationDestination(for: Route.self) { route in
@@ -29,6 +32,9 @@ import SwiftUI
                                     query: query,
                                     repository: dependencies.photosRepository,
                                     recentSearchesRepository: dependencies.recentSearchesRepository
+                                ),
+                                searchSuggestionsViewModel: SearchSuggestionsViewModel(
+                                    repository: dependencies.recentSearchesRepository
                                 )
                             )
                         }
@@ -38,7 +44,7 @@ import SwiftUI
                 .environment(\.imageLoader, dependencies.imageLoader)
                 .environmentObject(router)
             case .failure(let error):
-                ErrorView(error: error)
+                ErrorView(error: error, description: (error as? LocalizedError)?.recoverySuggestion)
             }
             
         }

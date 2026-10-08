@@ -16,7 +16,6 @@ struct FeedViewModelRecentSearchesTests {
         let query = viewModel.submitSearch("  cats ")
 
         #expect(query == "cats")
-        #expect(viewModel.recentSearches.map(\.query) == ["cats"])
         #expect(recentSearches.recentSearches().map(\.query) == ["cats"])
     }
 
@@ -25,15 +24,6 @@ struct FeedViewModelRecentSearchesTests {
 
         #expect(viewModel.submitSearch("   ") == nil)
         #expect(recentSearches.recentSearches().isEmpty)
-    }
-
-    @Test func loadingReadsTheSavedSearches() {
-        recentSearches.record("dogs")
-        let viewModel = makeViewModel()
-
-        viewModel.loadRecentSearches()
-
-        #expect(viewModel.recentSearches.map(\.query) == ["dogs"])
     }
 }
 
@@ -47,9 +37,7 @@ struct SearchViewModelRecentSearchesTests {
         let viewModel = SearchViewModel(query: "cats", repository: photos, recentSearchesRepository: recentSearches)
 
         viewModel.loadFirstPageIfNeeded()
-        for _ in 0..<50 where viewModel.photos.isEmpty {
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        try await waitUntil { !viewModel.photos.isEmpty }
 
         #expect(recentSearches.recentSearches().first?.thumbnailURL == Photo.stub(id: "first").thumbnailURL)
     }
@@ -63,9 +51,7 @@ struct SearchViewModelRecentSearchesTests {
         let viewModel = SearchViewModel(query: "cats", repository: photos, recentSearchesRepository: recentSearches)
 
         viewModel.loadFirstPageIfNeeded()
-        for _ in 0..<50 where viewModel.photos.isEmpty {
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        try await waitUntil { !viewModel.photos.isEmpty }
 
         #expect(recentSearches.recentSearches().first?.thumbnailURL == Photo.stub(id: "original").thumbnailURL)
     }

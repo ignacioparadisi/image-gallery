@@ -21,8 +21,8 @@ class PhotoGridViewModel: ObservableObject {
         case finished
     }
     
-    @Published private(set) var photos: [Photo] = []
     @Published private(set) var phase: Phase = .idle
+    @Published private(set) var photos: [Photo] = []
     
     private let prefetchCount = 10
     private var nextPage: Int = 1
@@ -52,6 +52,15 @@ class PhotoGridViewModel: ObservableObject {
         task = Task { await fetchNextPage() }
     }
     
+    func reload() {
+        task?.cancel()
+        photos = []
+        seenIDs = []
+        nextPage = 1
+        phase = .loading
+        task = Task { await fetchNextPage() }
+    }
+    
     func retry() {
         guard case .failure = phase else { return }
         phase = .loading
@@ -73,10 +82,9 @@ class PhotoGridViewModel: ObservableObject {
             } else {
                 phase = nextPage > page.totalPages ? .finished : .idle
             }
-        } catch let error as NetworkError {
-            phase = .failure(error)
         } catch {
-            phase = Task.isCancelled ? .idle : .failure(.connectionFailed)
+            guard !Task.isCancelled else { return }
+            phase = .failure(error as? NetworkError ?? .connectionFailed)
         }
     }
 }

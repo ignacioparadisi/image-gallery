@@ -74,7 +74,7 @@ struct PhotoGridView: View, Equatable {
         case .loading:
             ProgressView()
         case .failure(let error):
-            ShortErrorView(error: error) {
+            ErrorView(error: error) {
                 viewModel.retry()
             }
         default:
